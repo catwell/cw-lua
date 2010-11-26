@@ -1,0 +1,11 @@
+#!/usr/bin/lua
+
+---
+long = 48
+lat = 2
+---
+
+http = require("socket.http")
+r = http.request("http://www.earthtools.org/timezone/" .. long .. "/" .. lat)
+t = r:match("<isotime>(.+)\+.+</isotime>")
+print(t)

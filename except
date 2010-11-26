@@ -1,0 +1,17 @@
+#!/usr/bin/lua
+-- Pierre Chapuis <catwell at archlinux dot us>
+-- Released under the WTFPL (http://sam.zoy.org/wtfpl/COPYING).
+
+local filters = {}
+local f = false
+for _,a in ipairs(arg) do
+  if a=="-" then f = true
+  elseif f then
+    local g = true
+    for _,b in ipairs(filters) do
+      g = g and a~=b
+    end
+    if g then print(a) end 
+  else table.insert(filters, a) end
+end
+
