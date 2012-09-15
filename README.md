@@ -7,3 +7,4 @@ that do not deserve their own repository.
 ## Contains:
 
 - sha256: A SHA-256 implementation in pure LuaJIT+FFI.
+- lua-pipe: syntax experiment, Lua version of Pipe in Python.
