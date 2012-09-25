@@ -6,5 +6,6 @@ that do not deserve their own repository.
 
 ## Contains:
 
-- sha256: A SHA-256 implementation in pure LuaJIT+FFI.
+- sha256: a SHA-256 implementation in pure LuaJIT+FFI.
 - lua-pipe: syntax experiment, Lua version of Pipe in Python.
+- fakeredis: a Redis mock (same interface as redis-lua). WIP.
