@@ -23,6 +23,12 @@ local do_test_nil = function(k)
   do_test_silent(R:exists(k),false)
 end
 
+local do_test_nil_hash = function(k,k2)
+  printf(".")
+  do_test_silent(R:hget(k,k2),nil)
+  do_test_silent(R:hexists(k,k2),false)
+end
+
 -- strings
 
 printf("strings ")
@@ -50,16 +56,18 @@ print(" OK")
 printf("hashes ")
 do_test_nil("foo")
 do_test(R:hget("foo","bar"),nil)
+do_test_nil_hash("foo","bar")
 do_test(R:hset("foo","spam","eggs"),true)
 do_test(R:exists("foo"),true)
+do_test(R:hexists("foo","spam"),true)
 do_test(R:type("foo"),"hash")
 do_test(R:hget("foo","bar"),nil)
 do_test(R:hset("foo","bar","baz"),true)
 do_test(R:hget("foo","bar"),"baz")
 do_test(R:hdel("foo","bar"),1)
-do_test(R:hget("foo","bar"),nil)
+do_test_nil_hash("foo","bar")
 do_test(R:del("foo"),0)
-do_test(R:hget("foo","bar"),nil)
+do_test_nil_hash("foo","bar")
 do_test_nil("foo")
 print(" OK")
 

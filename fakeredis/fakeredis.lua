@@ -78,7 +78,12 @@ local hdel = function(self,k,...)
   return r
 end
 
-local hget = function(self,k,k2)
+local hget
+local hexists = function(self,k,k2)
+  return not not hget(self,k,k2)
+end
+
+hget = function(self,k,k2)
   assert((type(k2) == "string"))
   local x = xgetr(self,k,"hash")
   return x[k2]
@@ -122,6 +127,7 @@ local methods = {
   strlen = strlen,
   -- hashes
   hdel = hdel,
+  hexists = hexists,
   hget = hget,
   hset = hset,
   -- connection

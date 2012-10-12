@@ -48,7 +48,7 @@
 # hashes
 
 [x] hdel
-[ ] hexists
+[x] hexists
 [x] hget
 [ ] hgetall
 [ ] hincrby
@@ -146,7 +146,7 @@
 
 [ ] auth
 [x] echo
-[ ] ping
+[x] ping
 [ ] quit
 [-] select
 
