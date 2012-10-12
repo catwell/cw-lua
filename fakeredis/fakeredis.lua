@@ -57,6 +57,11 @@ local set = function(self,k,v)
   return true
 end
 
+local strlen = function(self,k)
+  local x = xgetr(self,k,"string")
+  return x[1] and #x[1] or 0
+end
+
 -- hashes
 
 local hdel = function(self,k,...)
@@ -103,6 +108,7 @@ local methods = {
   -- strings
   get = get,
   set = set,
+  strlen = strlen,
   -- hashes
   hdel = hdel,
   hget = hget,

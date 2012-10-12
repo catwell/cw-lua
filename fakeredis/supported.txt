@@ -7,7 +7,7 @@
 [ ] expireat
 [ ] keys
 [ ] migrate
-[ ] move
+[-] move
 [ ] object
 [ ] persist
 [ ] pexpire
@@ -43,7 +43,7 @@
 [ ] setbit
 [ ] setex
 [ ] setrange
-[ ] strlen
+[x] strlen
 
 # hashes
 
