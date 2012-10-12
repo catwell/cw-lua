@@ -1,5 +1,3 @@
--- NOTE: strings are lists of size 1 internally
-
 --- Helpers
 
 local xgetr = function(self,k,ktype)
@@ -23,7 +21,7 @@ local empty = function(self,k)
   return #self[k].value == 0
 end
 
--- generic
+-- keys
 
 local del = function(self,...)
   local arg = {...}
@@ -86,10 +84,14 @@ end
 -- sets
 
 local methods = {
+  -- keys
+  flushall = flushdb,
   flushdb = flushdb,
   del = del,
+  -- strings
   get = get,
   set = set,
+  -- hashes
   hget = hget,
   hset = hset,
   hdel = hdel,
