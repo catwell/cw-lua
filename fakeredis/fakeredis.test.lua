@@ -62,3 +62,10 @@ do_test(R:del("foo"),0)
 do_test(R:hget("foo","bar"),nil)
 do_test_nil("foo")
 print(" OK")
+
+-- server
+
+printf("server ")
+do_test(R:echo("foo"),"foo")
+do_test(R:ping(),"PONG")
+print(" OK")

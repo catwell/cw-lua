@@ -91,6 +91,17 @@ local hset = function(self,k,k2,v)
   return true
 end
 
+-- connection
+
+local echo = function(self,v)
+  assert(type(v) == "string")
+  return v
+end
+
+local ping = function(self)
+  return "PONG"
+end
+
 -- server
 
 local flushdb = function(self)
@@ -113,6 +124,9 @@ local methods = {
   hdel = hdel,
   hget = hget,
   hset = hset,
+  -- connection
+  echo = echo,
+  ping = ping,
   -- server
   flushall = flushdb,
   flushdb = flushdb,

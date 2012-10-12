@@ -145,7 +145,7 @@
 # connection
 
 [ ] auth
-[ ] echo
+[x] echo
 [ ] ping
 [ ] quit
 [-] select
