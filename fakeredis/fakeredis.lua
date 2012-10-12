@@ -36,6 +36,10 @@ local del = function(self,...)
   return r
 end
 
+local _type = function(self,k)
+  return (self[k] and self[k].ktype) and self[k].ktype or "none"
+end
+
 -- strings
 
 local get = function(self,k)
@@ -45,8 +49,7 @@ end
 
 local set = function(self,k,v)
   assert(type(v) == "string")
-  local x = xgetw(self,k,"string")
-  x[1] = v
+  self[k] = {ktype="string",value={v}}
   return true
 end
 
@@ -90,6 +93,7 @@ end
 local methods = {
   -- keys
   del = del,
+  ["type"] = _type,
   -- strings
   get = get,
   set = set,
