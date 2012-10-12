@@ -2,7 +2,7 @@
 
 [x] del
 [ ] dump
-[ ] exists
+[x] exists
 [ ] expire
 [ ] expireat
 [ ] keys

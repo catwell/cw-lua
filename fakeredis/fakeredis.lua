@@ -30,10 +30,14 @@ local del = function(self,...)
   assert(#arg > 0)
   local r = 0
   for i=1,#arg do
-    if self[arg[i]] and (not empty(self,arg[i])) then r = r + 1 end
+    if self[arg[i]] then r = r + 1 end
     self[arg[i]] = nil
   end
   return r
+end
+
+local exists = function(self,k)
+  return not not self[k]
 end
 
 local _type = function(self,k)
@@ -65,6 +69,7 @@ local hdel = function(self,k,...)
     if x[arg[i]] then r = r + 1 end
     x[arg[i]] = nil
   end
+  if empty(self,k) then self[k] = nil end
   return r
 end
 
@@ -93,6 +98,7 @@ end
 local methods = {
   -- keys
   del = del,
+  exists = exists,
   ["type"] = _type,
   -- strings
   get = get,
