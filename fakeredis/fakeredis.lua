@@ -21,6 +21,8 @@ local empty = function(self,k)
   return #self[k].value == 0
 end
 
+--- Commands
+
 -- keys
 
 local del = function(self,...)
@@ -34,12 +36,12 @@ local del = function(self,...)
   return r
 end
 
-local flushdb = function(self)
-  for k,_ in pairs(self) do self[k] = nil end
-  return true
-end
-
 -- strings
+
+local get = function(self,k)
+  local x = xgetr(self,k,"string")
+  return x[1]
+end
 
 local set = function(self,k,v)
   assert(type(v) == "string")
@@ -48,25 +50,7 @@ local set = function(self,k,v)
   return true
 end
 
-local get = function(self,k)
-  local x = xgetr(self,k,"string")
-  return x[1]
-end
-
 -- hashes
-
-local hset = function(self,k,k2,v)
-  assert((type(k2) == "string") and (type(v) == "string"))
-  local x = xgetw(self,k,"hash")
-  x[k2] = v
-  return true
-end
-
-local hget = function(self,k,k2)
-  assert((type(k2) == "string"))
-  local x = xgetr(self,k,"hash")
-  return x[k2]
-end
 
 local hdel = function(self,k,...)
   local arg = {...}
@@ -81,23 +65,42 @@ local hdel = function(self,k,...)
   return r
 end
 
--- sets
+local hget = function(self,k,k2)
+  assert((type(k2) == "string"))
+  local x = xgetr(self,k,"hash")
+  return x[k2]
+end
+
+local hset = function(self,k,k2,v)
+  assert((type(k2) == "string") and (type(v) == "string"))
+  local x = xgetw(self,k,"hash")
+  x[k2] = v
+  return true
+end
+
+-- server
+
+local flushdb = function(self)
+  for k,_ in pairs(self) do self[k] = nil end
+  return true
+end
+
+--- Class
 
 local methods = {
   -- keys
-  flushall = flushdb,
-  flushdb = flushdb,
   del = del,
   -- strings
   get = get,
   set = set,
   -- hashes
+  hdel = hdel,
   hget = hget,
   hset = hset,
-  hdel = hdel,
+  -- server
+  flushall = flushdb,
+  flushdb = flushdb,
 }
-
---- Class
 
 local new = function()
   local r = {}
