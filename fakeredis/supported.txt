@@ -55,8 +55,8 @@
 [ ] hincrbyfloat
 [x] hkeys
 [x] hlen
-[ ] hmget
-[ ] hmset
+[x] hmget
+[x] hmset
 [x] hset
 [ ] hsetnx
 [x] hvals

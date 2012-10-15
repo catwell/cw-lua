@@ -110,6 +110,24 @@ local hlen = function(self,k)
   return r
 end
 
+local hmget = function(self,k,k2s)
+  assert((type(k2s) == "table"))
+  local r = {}
+  local x = xgetr(self,k,"hash")
+  for i=1,#k2s do r[i] = x[k2s[i]] end
+  return r
+end
+
+local hmset = function(self,k,m)
+  assert((type(m) == "table"))
+  local x = xgetw(self,k,"hash")
+  for k,v in pairs(m) do
+    assert((type(k) == "string") and (type(v) == "string"))
+    x[k] = v
+  end
+  return true
+end
+
 local hset = function(self,k,k2,v)
   assert((type(k2) == "string") and (type(v) == "string"))
   local x = xgetw(self,k,"hash")
@@ -160,6 +178,8 @@ local methods = {
   hgetall = hgetall,
   hkeys = hkeys,
   hlen = hlen,
+  hmget = hmget,
+  hmset = hmset,
   hset = hset,
   hvals = hvals,
   -- connection
