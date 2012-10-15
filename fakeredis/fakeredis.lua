@@ -18,7 +18,15 @@ local xgetw = function(self,k,ktype)
 end
 
 local empty = function(self,k)
-  return #self[k].value == 0
+  local v,t = self[k].value,self[k].ktype
+  if t == nil then
+    return true
+  elseif t == "string" then
+    return not v[1]
+  elseif t == "hash" then
+    for _,_ in pairs(v) do return false end
+    return true
+  else print(self.ktype); error("unsupported") end
 end
 
 --- Commands
@@ -135,6 +143,17 @@ local hset = function(self,k,k2,v)
   return true
 end
 
+local hsetnx = function(self,k,k2,v)
+  assert((type(k2) == "string") and (type(v) == "string"))
+  local x = xgetw(self,k,"hash")
+  if x[k2] == nil then
+    x[k2] = v
+    return true
+  else
+    return false
+  end
+end
+
 local hvals = function(self,k)
   local x = xgetr(self,k,"hash")
   local r = {}
@@ -181,6 +200,7 @@ local methods = {
   hmget = hmget,
   hmset = hmset,
   hset = hset,
+  hsetnx = hsetnx,
   hvals = hvals,
   -- connection
   echo = echo,

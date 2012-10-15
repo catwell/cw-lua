@@ -58,7 +58,7 @@
 [x] hmget
 [x] hmset
 [x] hset
-[ ] hsetnx
+[x] hsetnx
 [x] hvals
 
 # lists
