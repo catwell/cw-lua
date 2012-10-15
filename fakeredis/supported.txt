@@ -50,16 +50,16 @@
 [x] hdel
 [x] hexists
 [x] hget
-[ ] hgetall
+[x] hgetall
 [ ] hincrby
 [ ] hincrbyfloat
-[ ] hkeys
-[ ] hlen
+[x] hkeys
+[x] hlen
 [ ] hmget
 [ ] hmset
 [x] hset
 [ ] hsetnx
-[ ] hvals
+[x] hvals
 
 # lists
 

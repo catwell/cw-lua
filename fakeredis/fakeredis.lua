@@ -89,11 +89,39 @@ hget = function(self,k,k2)
   return x[k2]
 end
 
+local hgetall = function(self,k)
+  local x = xgetr(self,k,"hash")
+  local r = {}
+  for k,v in pairs(x) do r[k] = v end
+  return r
+end
+
+local hkeys = function(self,k)
+  local x = xgetr(self,k,"hash")
+  local r = {}
+  for k,_ in pairs(x) do r[#r+1] = k end
+  return r
+end
+
+local hlen = function(self,k)
+  local x = xgetr(self,k,"hash")
+  local r = 0
+  for _,_ in pairs(x) do r = r + 1 end
+  return r
+end
+
 local hset = function(self,k,k2,v)
   assert((type(k2) == "string") and (type(v) == "string"))
   local x = xgetw(self,k,"hash")
   x[k2] = v
   return true
+end
+
+local hvals = function(self,k)
+  local x = xgetr(self,k,"hash")
+  local r = {}
+  for _,v in pairs(x) do r[#r+1] = v end
+  return r
 end
 
 -- connection
@@ -129,7 +157,11 @@ local methods = {
   hdel = hdel,
   hexists = hexists,
   hget = hget,
+  hgetall = hgetall,
+  hkeys = hkeys,
+  hlen = hlen,
   hset = hset,
+  hvals = hvals,
   -- connection
   echo = echo,
   ping = ping,
