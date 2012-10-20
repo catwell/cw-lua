@@ -83,18 +83,18 @@
 
 # sets
 
-[ ] sadd
-[ ] scard
+[x] sadd
+[x] scard
 [ ] sdiff
 [ ] sdiffstore
 [ ] sinter
 [ ] sinterstore
-[ ] sismember
-[ ] smembers
+[x] sismember
+[x] smembers
 [ ] smove
 [ ] spop
 [ ] srandmember
-[ ] srem
+[x] srem
 [ ] sunion
 [ ] sunionstore
 

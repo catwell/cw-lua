@@ -23,7 +23,7 @@ local empty = function(self,k)
     return true
   elseif t == "string" then
     return not v[1]
-  elseif t == "hash" then
+  elseif (t == "hash") or (t == "set") then
     for _,_ in pairs(v) do return false end
     return true
   else print(self.ktype); error("unsupported") end
@@ -161,6 +161,59 @@ local hvals = function(self,k)
   return r
 end
 
+-- sets
+
+local sadd = function(self,k,...)
+  local arg = {...}
+  local n = #arg
+  assert(n > 0)
+  for i=1,n do assert(type(arg[i]) == "string") end
+  local x,r = xgetw(self,k,"set"),0
+  for i=1,n do
+    if not x[arg[i]] then
+      x[arg[i]] = true
+      r = r + 1
+    end
+  end
+  return r
+end
+
+local scard = function(self,k)
+  local x = xgetr(self,k,"set")
+  local r = 0
+  for _,_ in pairs(x) do r = r + 1 end
+  return r
+end
+
+local sismember = function(self,k,v)
+  assert((type(v) == "string"))
+  local x = xgetr(self,k,"set")
+  return not not x[v]
+end
+
+local smembers = function(self,k)
+  local x = xgetr(self,k,"set")
+  local r = {}
+  for v,_ in pairs(x) do r[#r+1] = v end
+  return r
+end
+
+local srem = function(self,k,...)
+  local arg = {...}
+  local n = #arg
+  assert(n > 0)
+  for i=1,n do assert(type(arg[i]) == "string") end
+  local x,r = xgetw(self,k,"set"),0
+  for i=1,n do
+    if x[arg[i]] then
+      x[arg[i]] = nil
+      r = r + 1
+    end
+  end
+  if empty(self,k) then self[k] = nil end
+  return r
+end
+
 -- connection
 
 local echo = function(self,v)
@@ -202,6 +255,12 @@ local methods = {
   hset = hset,
   hsetnx = hsetnx,
   hvals = hvals,
+  -- sets
+  sadd = sadd,
+  scard = scard,
+  sismember = sismember,
+  smembers = smembers,
+  srem = srem,
   -- connection
   echo = echo,
   ping = ping,
