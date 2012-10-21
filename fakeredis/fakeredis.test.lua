@@ -150,6 +150,12 @@ do_test(R:del("foo"),0)
 do_test(R:sismember("foo","A"),false)
 do_test_set(R:smembers("foo"),{})
 do_test_nil("foo")
+do_test(R:sadd("S1","A","B","C","D","E"),5)
+do_test(R:sadd("S2","A","B","F"),3)
+do_test(R:sadd("S3","A","C","D"),3)
+do_test_set(R:sdiff("S1","S2","S3"),{"E"})
+do_test_set(R:sinter("S1","S2","S3"),{"A"})
+do_test_set(R:sunion("S1","S2","S3"),{"A","B","C","D","E","F"})
 print(" OK")
 
 -- server

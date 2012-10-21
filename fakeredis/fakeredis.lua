@@ -36,6 +36,12 @@ local getargs = function(...)
   return arg
 end
 
+local lset_to_list = function(s)
+  local r = {}
+  for v,_ in pairs(s) do r[#r+1] = v end
+  return r
+end
+
 --- Commands
 
 -- keys
@@ -186,6 +192,33 @@ local scard = function(self,k)
   return r
 end
 
+local sdiff = function(self,k,...)
+  local arg = getargs(...)
+  local x = xgetr(self,k,"set")
+  local r = {}
+  for v,_ in pairs(x) do r[v] = true end
+  for i=1,#arg do
+    x = xgetr(self,arg[i],"set")
+    for v,_ in pairs(x) do r[v] = nil end
+  end
+  return lset_to_list(r)
+end
+
+local sinter = function(self,k,...)
+  local arg = getargs(...)
+  local x = xgetr(self,k,"set")
+  local r = {}
+  local y
+  for v,_ in pairs(x) do
+    r[v] = true
+    for i=1,#arg do
+      y = xgetr(self,arg[i],"set")
+      if not y[v] then r[v] = nil; break end
+    end
+  end
+  return lset_to_list(r)
+end
+
 local sismember = function(self,k,v)
   assert((type(v) == "string"))
   local x = xgetr(self,k,"set")
@@ -194,9 +227,7 @@ end
 
 local smembers = function(self,k)
   local x = xgetr(self,k,"set")
-  local r = {}
-  for v,_ in pairs(x) do r[#r+1] = v end
-  return r
+  return lset_to_list(x)
 end
 
 local srem = function(self,k,...)
@@ -210,6 +241,17 @@ local srem = function(self,k,...)
   end
   if empty(self,k) then self[k] = nil end
   return r
+end
+
+local sunion = function(self,...)
+  local arg = getargs(...)
+  local r = {}
+  local x
+  for i=1,#arg do
+    x = xgetr(self,arg[i],"set")
+    for v,_ in pairs(x) do r[v] = true end
+  end
+  return lset_to_list(r)
 end
 
 -- connection
@@ -256,9 +298,12 @@ local methods = {
   -- sets
   sadd = sadd,
   scard = scard,
+  sdiff = sdiff,
+  sinter = sinter,
   sismember = sismember,
   smembers = smembers,
   srem = srem,
+  sunion = sunion,
   -- connection
   echo = echo,
   ping = ping,

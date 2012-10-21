@@ -85,9 +85,9 @@
 
 [x] sadd
 [x] scard
-[ ] sdiff
+[x] sdiff
 [ ] sdiffstore
-[ ] sinter
+[x] sinter
 [ ] sinterstore
 [x] sismember
 [x] smembers
@@ -95,7 +95,7 @@
 [ ] spop
 [ ] srandmember
 [x] srem
-[ ] sunion
+[x] sunion
 [ ] sunionstore
 
 # sorted sets
