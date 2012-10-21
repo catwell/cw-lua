@@ -91,7 +91,7 @@
 [ ] sinterstore
 [x] sismember
 [x] smembers
-[ ] smove
+[x] smove
 [ ] spop
 [ ] srandmember
 [x] srem

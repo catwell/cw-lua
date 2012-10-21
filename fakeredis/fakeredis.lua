@@ -230,6 +230,16 @@ local smembers = function(self,k)
   return lset_to_list(x)
 end
 
+local smove = function(self,k,k2,v)
+  local x = xgetr(self,k,"set")
+  local y = xgetw(self,k2,"set")
+  if x[v] then
+    x[v] = nil
+    y[v] = true
+    return true
+  else return false end
+end
+
 local srem = function(self,k,...)
   local arg = getargs(...)
   local x,r = xgetw(self,k,"set"),0
@@ -302,6 +312,7 @@ local methods = {
   sinter = sinter,
   sismember = sismember,
   smembers = smembers,
+  smove = smove,
   srem = srem,
   sunion = sunion,
   -- connection

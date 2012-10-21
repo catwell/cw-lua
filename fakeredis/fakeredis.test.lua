@@ -156,6 +156,10 @@ do_test(R:sadd("S3","A","C","D"),3)
 do_test_set(R:sdiff("S1","S2","S3"),{"E"})
 do_test_set(R:sinter("S1","S2","S3"),{"A"})
 do_test_set(R:sunion("S1","S2","S3"),{"A","B","C","D","E","F"})
+do_test(R:smove("S2","S3","F"),true)
+do_test(R:smove("S2","S3","F"),false)
+do_test_set(R:smembers("S2"),{"A","B"})
+do_test_set(R:smembers("S3"),{"A","C","D","F"})
 print(" OK")
 
 -- server
