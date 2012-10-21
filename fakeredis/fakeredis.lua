@@ -42,6 +42,12 @@ local lset_to_list = function(s)
   return r
 end
 
+local nkeys = function(x)
+  local r = 0
+  for _,_ in pairs(x) do r = r + 1 end
+  return r
+end
+
 --- Commands
 
 -- keys
@@ -123,9 +129,7 @@ end
 
 local hlen = function(self,k)
   local x = xgetr(self,k,"hash")
-  local r = 0
-  for _,_ in pairs(x) do r = r + 1 end
-  return r
+  return nkeys(x)
 end
 
 local hmget = function(self,k,k2s)
@@ -187,12 +191,10 @@ end
 
 local scard = function(self,k)
   local x = xgetr(self,k,"set")
-  local r = 0
-  for _,_ in pairs(x) do r = r + 1 end
-  return r
+  return nkeys(x)
 end
 
-local sdiff = function(self,k,...)
+local _sdiff = function(self,k,...)
   local arg = getargs(...)
   local x = xgetr(self,k,"set")
   local r = {}
@@ -201,10 +203,21 @@ local sdiff = function(self,k,...)
     x = xgetr(self,arg[i],"set")
     for v,_ in pairs(x) do r[v] = nil end
   end
-  return lset_to_list(r)
+  return r
 end
 
-local sinter = function(self,k,...)
+local sdiff = function(self,k,...)
+  return lset_to_list(_sdiff(self,k,...))
+end
+
+local sdiffstore = function(self,k2,k,...)
+  assert(type(k2) == "string")
+  local x = _sdiff(self,k,...)
+  self[k2] = {ktype="set",value=x}
+  return nkeys(x)
+end
+
+local _sinter = function(self,k,...)
   local arg = getargs(...)
   local x = xgetr(self,k,"set")
   local r = {}
@@ -216,7 +229,18 @@ local sinter = function(self,k,...)
       if not y[v] then r[v] = nil; break end
     end
   end
-  return lset_to_list(r)
+  return r
+end
+
+local sinter = function(self,k,...)
+  return lset_to_list(_sinter(self,k,...))
+end
+
+local sinterstore = function(self,k2,k,...)
+  assert(type(k2) == "string")
+  local x = _sinter(self,k,...)
+  self[k2] = {ktype="set",value=x}
+  return nkeys(x)
 end
 
 local sismember = function(self,k,v)
@@ -253,7 +277,7 @@ local srem = function(self,k,...)
   return r
 end
 
-local sunion = function(self,...)
+local _sunion = function(self,...)
   local arg = getargs(...)
   local r = {}
   local x
@@ -261,7 +285,18 @@ local sunion = function(self,...)
     x = xgetr(self,arg[i],"set")
     for v,_ in pairs(x) do r[v] = true end
   end
-  return lset_to_list(r)
+  return r
+end
+
+local sunion = function(self,k,...)
+  return lset_to_list(_sunion(self,k,...))
+end
+
+local sunionstore = function(self,k2,k,...)
+  assert(type(k2) == "string")
+  local x = _sunion(self,k,...)
+  self[k2] = {ktype="set",value=x}
+  return nkeys(x)
 end
 
 -- connection
@@ -309,12 +344,15 @@ local methods = {
   sadd = sadd,
   scard = scard,
   sdiff = sdiff,
+  sdiffstore = sdiffstore,
   sinter = sinter,
+  sinterstore = sinterstore,
   sismember = sismember,
   smembers = smembers,
   smove = smove,
   srem = srem,
   sunion = sunion,
+  sunionstore = sunionstore,
   -- connection
   echo = echo,
   ping = ping,
