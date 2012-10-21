@@ -29,13 +29,19 @@ local empty = function(self,k)
   else print(self.ktype); error("unsupported") end
 end
 
+local getargs = function(...)
+  local arg = {...}
+  local n = #arg; assert(n > 0)
+  for i=1,n do assert(type(arg[i]) == "string") end
+  return arg
+end
+
 --- Commands
 
 -- keys
 
 local del = function(self,...)
-  local arg = {...}
-  assert(#arg > 0)
+  local arg = getargs(...)
   local r = 0
   for i=1,#arg do
     if self[arg[i]] then r = r + 1 end
@@ -73,12 +79,10 @@ end
 -- hashes
 
 local hdel = function(self,k,...)
-  local arg = {...}
-  assert(#arg > 0)
+  local arg = getargs(...)
   local r = 0
   local x = xgetw(self,k,"hash")
   for i=1,#arg do
-    assert((type(arg[i]) == "string"))
     if x[arg[i]] then r = r + 1 end
     x[arg[i]] = nil
   end
@@ -164,12 +168,9 @@ end
 -- sets
 
 local sadd = function(self,k,...)
-  local arg = {...}
-  local n = #arg
-  assert(n > 0)
-  for i=1,n do assert(type(arg[i]) == "string") end
+  local arg = getargs(...)
   local x,r = xgetw(self,k,"set"),0
-  for i=1,n do
+  for i=1,#arg do
     if not x[arg[i]] then
       x[arg[i]] = true
       r = r + 1
@@ -199,12 +200,9 @@ local smembers = function(self,k)
 end
 
 local srem = function(self,k,...)
-  local arg = {...}
-  local n = #arg
-  assert(n > 0)
-  for i=1,n do assert(type(arg[i]) == "string") end
+  local arg = getargs(...)
   local x,r = xgetw(self,k,"set"),0
-  for i=1,n do
+  for i=1,#arg do
     if x[arg[i]] then
       x[arg[i]] = nil
       r = r + 1
