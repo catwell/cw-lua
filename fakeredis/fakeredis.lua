@@ -99,7 +99,26 @@ local get = function(self,k)
   return x[1]
 end
 
-local set = function(self,k,v)
+local mget = function(self,...)
+  local arg,r = getargs(...),{}
+  for i=1,#arg do r[i] = get(self,arg[i]) end
+  return r
+end
+
+local set
+local mset = function(self,...)
+  local arg,p = getargs(...),{}
+  if (#arg == 1) and type(arg[1] == "table") then
+    p = arg[1]
+  else
+    assert(#arg%2 == 0)
+    for i=0,#arg/2-1 do p[arg[2*i+1]] = arg[2*i+2] end
+  end
+  for k,v in pairs(p) do set(self,k,v) end
+  return true
+end
+
+set = function(self,k,v)
   assert(type(v) == "string")
   self[k] = {ktype="string",value={v}}
   return true
@@ -351,6 +370,8 @@ local methods = {
   -- strings
   append = append,
   get = get,
+  mget = mget,
+  mset = mset,
   set = set,
   strlen = strlen,
   -- hashes

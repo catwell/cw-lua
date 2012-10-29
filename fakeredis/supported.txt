@@ -35,13 +35,14 @@
 [ ] incr
 [ ] incrby
 [ ] incrbyfloat
-[ ] mget
-[ ] mset
+[x] mget
+[x] mset
 [ ] msetnx
 [ ] psetex
 [x] set
 [ ] setbit
 [ ] setex
+[ ] setnx
 [ ] setrange
 [x] strlen
 
