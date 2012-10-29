@@ -70,6 +70,21 @@ local _type = function(self,k)
   return (self[k] and self[k].ktype) and self[k].ktype or "none"
 end
 
+local rename = function(self,k,k2)
+  assert((k ~= k2) and self[k] and (type(k2) == "string"))
+  self[k2] = self[k]
+  self[k] = nil
+  return true
+end
+
+local renamenx = function(self,k,k2)
+  if self[k2] then
+    return false
+  else
+    return rename(self,k,k2)
+  end
+end
+
 -- strings
 
 local get = function(self,k)
@@ -324,6 +339,8 @@ local methods = {
   del = del,
   exists = exists,
   ["type"] = _type,
+  rename = rename,
+  renamenx = renamenx,
   -- strings
   get = get,
   set = set,

@@ -14,8 +14,8 @@
 [ ] pexpireat
 [ ] pttl
 [ ] randomkey
-[ ] rename
-[ ] renamenx
+[x] rename
+[x] renamenx
 [ ] restore
 [ ] sort
 [ ] ttl
