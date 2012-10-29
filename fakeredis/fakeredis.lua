@@ -87,6 +87,13 @@ end
 
 -- strings
 
+local append = function(self,k,v)
+  assert(type(v) == "string")
+  local x = xgetw(self,k,"string")
+  x[1] = (x[1] or "") .. v
+  return #x[1]
+end
+
 local get = function(self,k)
   local x = xgetr(self,k,"string")
   return x[1]
@@ -342,6 +349,7 @@ local methods = {
   rename = rename,
   renamenx = renamenx,
   -- strings
+  append = append,
   get = get,
   set = set,
   strlen = strlen,

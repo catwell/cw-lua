@@ -23,7 +23,7 @@
 
 # strings
 
-[ ] append
+[x] append
 [ ] bitcount
 [ ] bitop
 [ ] decr
