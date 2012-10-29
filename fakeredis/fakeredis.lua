@@ -36,6 +36,17 @@ local getargs = function(...)
   return arg
 end
 
+local getargs_as_map = function(...)
+  local arg,r = getargs(...),{}
+  if (#arg == 1) and type(arg[1] == "table") then
+    r = arg[1]
+  else
+    assert(#arg%2 == 0)
+    for i=0,#arg/2-1 do r[arg[2*i+1]] = arg[2*i+2] end
+  end
+  return r
+end
+
 local lset_to_list = function(s)
   local r = {}
   for v,_ in pairs(s) do r[#r+1] = v end
@@ -107,14 +118,17 @@ end
 
 local set
 local mset = function(self,...)
-  local arg,p = getargs(...),{}
-  if (#arg == 1) and type(arg[1] == "table") then
-    p = arg[1]
-  else
-    assert(#arg%2 == 0)
-    for i=0,#arg/2-1 do p[arg[2*i+1]] = arg[2*i+2] end
+  local argmap = getargs_as_map(...)
+  for k,v in pairs(argmap) do set(self,k,v) end
+  return true
+end
+
+local msetnx = function(self,...)
+  local argmap = getargs_as_map(...)
+  for k,_ in pairs(argmap) do
+    if self[k] then return false end
   end
-  for k,v in pairs(p) do set(self,k,v) end
+  for k,v in pairs(argmap) do set(self,k,v) end
   return true
 end
 
@@ -122,6 +136,14 @@ set = function(self,k,v)
   assert(type(v) == "string")
   self[k] = {ktype="string",value={v}}
   return true
+end
+
+local setnx = function(self,k,v)
+  if self[k] then
+    return false
+  else
+    return set(self,k,v)
+  end
 end
 
 local strlen = function(self,k)
@@ -372,7 +394,9 @@ local methods = {
   get = get,
   mget = mget,
   mset = mset,
+  msetnx = msetnx,
   set = set,
+  setnx = setnx,
   strlen = strlen,
   -- hashes
   hdel = hdel,
