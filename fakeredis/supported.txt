@@ -5,7 +5,7 @@
 [x] exists
 [ ] expire
 [ ] expireat
-[ ] keys
+[x] keys
 [ ] migrate
 [-] move
 [ ] object

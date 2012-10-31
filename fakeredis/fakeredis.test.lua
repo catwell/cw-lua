@@ -204,3 +204,36 @@ printf("server ")
 do_test(R:echo("foo"),"foo")
 do_test(R:ping(),"PONG")
 print(" OK")
+
+-- 'keys' command
+printf("keys ")
+local _ks = {
+  "",
+  "foo",
+  "afoo",
+  "bar",
+  "some-key",
+  "foo:1",
+  "foo:1:bar",
+  "foo:2:bar",
+  "this%is-really:tw][sted",
+}
+local _cases = {
+  "",{""},
+  "notakey",{},
+  "*",_ks,
+  "???",{"foo","bar"},
+  "foo:*:*",{"foo:1:bar","foo:2:bar"},
+  "*f[a-z]o",{"foo","afoo"},
+  "*s%is-rea[j-m]??:*",{"this%is-really:tw][sted"},
+}
+local _ks2 = {}
+for i=1,#_ks do
+  _ks2[#_ks2+1] = _ks[i]
+  _ks2[#_ks2+1] = "x"
+end
+do_test(R:mset(unpack(_ks2)),true)
+for i=1,#_cases/2 do
+  do_test_set(R:keys(_cases[2*i-1]),_cases[2*i])
+end
+print(" OK")

@@ -77,6 +77,43 @@ local exists = function(self,k)
   return not not self[k]
 end
 
+local keys = function(self,pattern)
+  -- We want to convert the Redis pattern to a Lua pattern.
+  -- Start by escaping dashes *outside* character classes.
+  -- We also need to escape percents here.
+  local t,p,n = {},1,#pattern
+  local p1,p2
+  while true do
+    p1,p2 = pattern:find("%[.+%]",p)
+    if p1 then
+      if p1 > p then
+        t[#t+1] = {true,pattern:sub(p,p1-1)}
+      end
+      t[#t+1] = {false,pattern:sub(p1,p2)}
+      p = p2+1
+      if p > n then break end
+    else
+      t[#t+1] = {true,pattern:sub(p,n)}
+      break
+    end
+  end
+  for i=1,#t do
+    if t[i][1] then
+      t[i] = t[i][2]:gsub("[%%%-]","%%%0")
+    else t[i] = t[i][2]:gsub("%%","%%%%") end
+  end
+  -- Remaining Lua magic chars are: '^$().[]*+?' ; escape them except '*?[]'
+  -- Then convert '\' to '%', '*' to '.*' and '?' to '.'. Leave '[]' as is.
+  -- Wrap in '^$' to enforce bounds.
+  local lp = "^" .. table.concat(t):gsub("[%^%$%(%)%.%+]","%%%0")
+    :gsub("\\","%%"):gsub("%*","%.%*"):gsub("%?","%.") .. "$"
+  local r = {}
+  for k,_ in pairs(self) do
+    if k:match(lp) then r[#r+1] = k end
+  end
+  return r
+end
+
 local _type = function(self,k)
   return (self[k] and self[k].ktype) and self[k].ktype or "none"
 end
@@ -386,6 +423,7 @@ local methods = {
   -- keys
   del = del,
   exists = exists,
+  keys = keys,
   ["type"] = _type,
   rename = rename,
   renamenx = renamenx,
