@@ -118,6 +118,11 @@ local _type = function(self,k)
   return (self[k] and self[k].ktype) and self[k].ktype or "none"
 end
 
+local randomkey = function(self)
+  local ks = lset_to_list(self)
+  return ks[math.random(1,#ks)]
+end
+
 local rename = function(self,k,k2)
   assert((k ~= k2) and self[k] and (type(k2) == "string"))
   self[k2] = self[k]
@@ -425,6 +430,7 @@ local methods = {
   exists = exists,
   keys = keys,
   ["type"] = _type,
+  randomkey = randomkey,
   rename = rename,
   renamenx = renamenx,
   -- strings
@@ -477,4 +483,3 @@ end
 return {
   new = new,
 }
-

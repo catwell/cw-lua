@@ -13,7 +13,7 @@
 [ ] pexpire
 [ ] pexpireat
 [ ] pttl
-[ ] randomkey
+[x] randomkey
 [x] rename
 [x] renamenx
 [ ] restore

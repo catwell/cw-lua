@@ -205,8 +205,9 @@ do_test(R:echo("foo"),"foo")
 do_test(R:ping(),"PONG")
 print(" OK")
 
--- 'keys' command
+--- keys
 printf("keys ")
+-- 'keys' command
 local _ks = {
   "",
   "foo",
@@ -236,4 +237,17 @@ do_test(R:mset(unpack(_ks2)),true)
 for i=1,#_cases/2 do
   do_test_set(R:keys(_cases[2*i-1]),_cases[2*i])
 end
+-- 'randomkey' command
+local _ks_set = {}
+for i=1,#_ks do _ks_set[_ks[i]] = true end
+local _cur,_prev
+local _founddiff,_notakey = false,false
+for i=1,100 do
+  _cur = R:randomkey()
+  if not _ks_set[_cur] then _notakey = true end
+  if _cur ~= _prev then _founddiff = true end
+  _prev = _cur
+end
+do_test(_notakey,false)
+do_test(_founddiff,true)
 print(" OK")
