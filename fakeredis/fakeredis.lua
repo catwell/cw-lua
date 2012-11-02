@@ -120,7 +120,10 @@ end
 
 local randomkey = function(self)
   local ks = lset_to_list(self)
-  return ks[math.random(1,#ks)]
+  local n = #ks
+  if n > 0 then
+    return ks[math.random(1,n)]
+  else return nil end
 end
 
 local rename = function(self,k,k2)

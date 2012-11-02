@@ -58,10 +58,11 @@ local do_test_hash = function(t1,t2)
   for k,v in pairs(t2) do do_test_silent(v,t1[k]) end
 end
 
--- strings
+--- strings (and some key commands)
 
 printf("strings ")
 do_test(R:flushdb(),true)
+do_test(R:randomkey(),nil)
 do_test_nil("foo")
 do_test(R:strlen("foo"),0)
 do_test(R:set("foo","bar"),true)
@@ -69,6 +70,7 @@ do_test(R:exists("foo"),true)
 do_test(R:get("foo"),"bar")
 do_test(R:type("foo"),"string")
 do_test(R:strlen("foo"),3)
+do_test(R:randomkey(),"foo")
 do_test(R:del("foo"),1)
 do_test_nil("foo")
 do_test(R:hset("foo","spam","eggs"),true)
@@ -111,7 +113,7 @@ do_test(R:del("foo","chunky","spam"),3)
 do_test_nil("foo"); do_test_nil("spam"); do_test_nil("chunky")
 print(" OK")
 
--- hashes
+--- hashes
 
 printf("hashes ")
 do_test_nil("foo")
@@ -151,7 +153,7 @@ do_test_nil_hash("foo","bar")
 do_test_nil("foo")
 print(" OK")
 
--- sets
+--- sets
 
 printf("sets ")
 do_test_nil("foo")
@@ -200,14 +202,15 @@ do_test_set(R:smembers("S3"),{"A","C","D","F"})
 do_test(R:del("S0","S1","S2","S3"),4)
 print(" OK")
 
--- server
+--- server
 
 printf("server ")
 do_test(R:echo("foo"),"foo")
 do_test(R:ping(),"PONG")
 print(" OK")
 
---- keys
+--- remaining key commands
+
 printf("keys ")
 -- 'keys' command
 local _ks = {
