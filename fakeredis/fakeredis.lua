@@ -157,6 +157,16 @@ local get = function(self,k)
   return x[1]
 end
 
+local getrange = function(self,k,i1,i2)
+  local x = xgetr(self,k,"string")
+  x = x[1] or ""
+  i1,i2 = tonumber(i1),tonumber(i2)
+  assert(i1 and i2)
+  if i1 >= 0 then i1 = i1 + 1 end
+  if i2 >= 0 then i2 = i2 + 1 end
+  return x:sub(i1,i2)
+end
+
 local getset = function(self,k,v)
   local r = get(self,k)
   set(self,k,v)
@@ -467,6 +477,7 @@ local methods = {
   -- strings
   append = append,
   get = get,
+  getrange = getrange,
   getset = getset,
   mget = mget,
   mset = mset,

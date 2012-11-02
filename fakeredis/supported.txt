@@ -30,7 +30,7 @@
 [ ] decrby
 [x] get
 [ ] getbit
-[ ] getrange
+[x] getrange
 [x] getset
 [ ] incr
 [ ] incrby
