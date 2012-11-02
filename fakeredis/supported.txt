@@ -43,7 +43,7 @@
 [ ] setbit
 [ ] setex
 [x] setnx
-[ ] setrange
+[x] setrange
 [x] strlen
 
 # hashes

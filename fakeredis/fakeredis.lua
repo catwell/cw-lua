@@ -208,6 +208,23 @@ local setnx = function(self,k,v)
   end
 end
 
+local setrange = function(self,k,i,s)
+  local x = xgetw(self,k,"string")
+  local y = x[1] or ""
+  i = tonumber(i)
+  assert(i and (i >= 0) and (type(s) == "string"))
+  local ly,ls = #y,#s
+  if i > ly then -- zero padding
+    local t = {}
+    for i=1,i-ly do t[i] = "\0" end
+    y = y .. table.concat(t) .. s
+  else
+    y = y:sub(1,i) .. s .. y:sub(i+ls+1,ly)
+  end
+  x[1] = y
+  return #y
+end
+
 local strlen = function(self,k)
   local x = xgetr(self,k,"string")
   return x[1] and #x[1] or 0
@@ -484,6 +501,7 @@ local methods = {
   msetnx = msetnx,
   set = set,
   setnx = setnx,
+  setrange = setrange,
   strlen = strlen,
   -- hashes
   hdel = hdel,
