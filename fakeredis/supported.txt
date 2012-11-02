@@ -93,8 +93,8 @@
 [x] sismember
 [x] smembers
 [x] smove
-[ ] spop
-[ ] srandmember
+[x] spop
+[x] srandmember
 [x] srem
 [x] sunion
 [x] sunionstore

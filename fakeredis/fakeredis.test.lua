@@ -1,3 +1,4 @@
+require "pl.strict"
 local fakeredis = require "fakeredis"
 local R = fakeredis.new()
 
@@ -42,7 +43,7 @@ local do_test_list = function(t1,t2,n)
   for i=1,n do do_test_silent(t1[i],t2[i]) end
 end
 
-do_test_set = function(t1,t2)
+local do_test_set = function(t1,t2)
   printf(".")
   do_test_silent(#t1,#t2)
   table.sort(t1); table.sort(t2)
@@ -160,10 +161,17 @@ do_test_nil("foo")
 do_test(R:scard("foo"),0)
 do_test(R:sismember("foo","A"),false)
 do_test_set(R:smembers("foo"),{})
+do_test(R:srandmember("foo"),nil)
+do_test(R:spop("foo"),nil)
 do_test(R:sadd("foo","A"),1)
 do_test(R:exists("foo"),true)
 do_test(R:type("foo"),"set")
 do_test(R:scard("foo"),1)
+do_test(R:srandmember("foo"),"A")
+do_test(R:spop("foo"),"A")
+do_test(R:spop("foo"),nil)
+do_test_nil("foo")
+do_test(R:sadd("foo","A"),1)
 do_test(R:sadd("foo","B"),1)
 do_test(R:scard("foo"),2)
 do_test(R:sadd("foo","A","C","D"),2)
@@ -195,11 +203,21 @@ do_test(R:sinterstore("S0","S1","S2","S3"),1)
 do_test_set(R:smembers("S0"),{"A"})
 do_test(R:sunionstore("S0","S1","S2","S3"),6)
 do_test_set(R:smembers("S0"),{"A","B","C","D","E","F"})
+local _cur = {A = true,B = true,C = true,D = true,E = true,F = true}
+local _x
+for i=1,6 do
+  _x = R:srandmember("S0")
+  do_test_silent(_cur[_x],true)
+  _x = R:spop("S0")
+  do_test_silent(_cur[_x],true)
+  _cur[_x] = false
+  do_test(R:scard("S0"),6-i)
+end
 do_test(R:smove("S2","S3","F"),true)
 do_test(R:smove("S2","S3","F"),false)
 do_test_set(R:smembers("S2"),{"A","B"})
 do_test_set(R:smembers("S3"),{"A","C","D","F"})
-do_test(R:del("S0","S1","S2","S3"),4)
+do_test(R:del("S0","S1","S2","S3"),3)
 print(" OK")
 
 --- server

@@ -371,12 +371,33 @@ end
 
 local smove = function(self,k,k2,v)
   local x = xgetr(self,k,"set")
-  local y = xgetw(self,k2,"set")
   if x[v] then
+    local y = xgetw(self,k2,"set")
     x[v] = nil
     y[v] = true
     return true
   else return false end
+end
+
+local spop = function(self,k)
+  local x,r = xgetw(self,k,"set"),nil
+  local l = lset_to_list(x)
+  local n = #l
+  if n > 0 then
+    r = l[math.random(1,n)]
+    x[r] = nil
+  end
+  if empty(self,k) then self[k] = nil end
+  return r
+end
+
+local srandmember = function(self,k)
+  local x = xgetr(self,k,"set")
+  local l = lset_to_list(x)
+  local n = #l
+  if n > 0 then
+    return l[math.random(1,n)]
+  else return nil end
 end
 
 local srem = function(self,k,...)
@@ -475,6 +496,8 @@ local methods = {
   sismember = sismember,
   smembers = smembers,
   smove = smove,
+  spop = spop,
+  srandmember = srandmember,
   srem = srem,
   sunion = sunion,
   sunionstore = sunionstore,
