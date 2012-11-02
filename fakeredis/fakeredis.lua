@@ -140,6 +140,8 @@ end
 
 -- strings
 
+local set
+
 local append = function(self,k,v)
   assert(type(v) == "string")
   local x = xgetw(self,k,"string")
@@ -152,13 +154,18 @@ local get = function(self,k)
   return x[1]
 end
 
+local getset = function(self,k,v)
+  local r = get(self,k)
+  set(self,k,v)
+  return r
+end
+
 local mget = function(self,...)
   local arg,r = getargs(...),{}
   for i=1,#arg do r[i] = get(self,arg[i]) end
   return r
 end
 
-local set
 local mset = function(self,...)
   local argmap = getargs_as_map(...)
   for k,v in pairs(argmap) do set(self,k,v) end
@@ -436,6 +443,7 @@ local methods = {
   -- strings
   append = append,
   get = get,
+  getset = getset,
   mget = mget,
   mset = mset,
   msetnx = msetnx,

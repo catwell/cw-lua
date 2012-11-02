@@ -31,7 +31,7 @@
 [x] get
 [ ] getbit
 [ ] getrange
-[ ] getset
+[x] getset
 [ ] incr
 [ ] incrby
 [ ] incrbyfloat
