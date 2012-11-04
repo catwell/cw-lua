@@ -1,18 +1,24 @@
 --- Helpers
 
+local xdefv = function(ktype)
+  if ktype == "list" then
+    return {head=0,tail=0}
+  else return {} end
+end
+
 local xgetr = function(self,k,ktype)
   if self[k] then
     assert(self[k].ktype == ktype)
     assert(self[k].value)
     return self[k].value
-  else return {} end
+  else return xdefv(ktype) end
 end
 
 local xgetw = function(self,k,ktype)
   if self[k] and self[k].value then
     assert(self[k].ktype == ktype)
   else
-    self[k] = {ktype=ktype,value={}}
+    self[k] = {ktype=ktype,value=xdefv(ktype)}
   end
   return self[k].value
 end
@@ -26,6 +32,8 @@ local empty = function(self,k)
   elseif (t == "hash") or (t == "set") then
     for _,_ in pairs(v) do return false end
     return true
+  elseif t == "list" then
+    return v.head == v.tail
   else print(self.ktype); error("unsupported") end
 end
 
@@ -115,7 +123,7 @@ local keys = function(self,pattern)
 end
 
 local _type = function(self,k)
-  return (self[k] and self[k].ktype) and self[k].ktype or "none"
+  return self[k] and self[k].ktype or "none"
 end
 
 local randomkey = function(self)
@@ -317,6 +325,77 @@ local hvals = function(self,k)
   return r
 end
 
+-- lists (head = left, tail = right)
+
+local _l_real_i = function(x,i)
+  if i < 0 then
+    return x.tail+i+1
+  else
+    return x.head+i+1
+  end
+end
+
+local _l_len = function(x)
+  return x.tail - x.head
+end
+
+local lindex = function(self,k,i)
+  assert(type(i) == "number")
+  local x = xgetr(self,k,"list")
+  return x[_l_real_i(x,i)]
+end
+
+local llen = function(self,k)
+  local x = xgetr(self,k,"list")
+  return _l_len(x)
+end
+
+local lpop = function(self,k)
+  local x = xgetw(self,k,"list")
+  local l,r = _l_len(x),x[x.head+1]
+  if l > 1 then
+    x.head = x.head + 1
+    x[x.head] = nil
+  else self[k] = nil end
+  return r
+end
+
+local lpush = function(self,k,v)
+  assert(type(v) == "string")
+  local x = xgetw(self,k,"list")
+  x[x.head] = v
+  x.head = x.head - 1
+  return _l_len(x)
+end
+
+local lrange = function(self,k,i1,i2)
+  local x,r = xgetr(self,k,"list"),{}
+  i1 = math.max(_l_real_i(x,i1),x.head+1)
+  i2 = math.min(_l_real_i(x,i2),x.tail)
+  if i1 <= i2 then
+    for i=i1,i2 do r[#r+1] = x[i] end
+  end
+  return r
+end
+
+local rpop = function(self,k)
+  local x = xgetw(self,k,"list")
+  local l,r = _l_len(x),x[x.tail]
+  if l > 1 then
+    x[x.tail] = nil
+    x.tail = x.tail - 1
+  else self[k] = nil end
+  return r
+end
+
+local rpush = function(self,k,v)
+  assert(type(v) == "string")
+  local x = xgetw(self,k,"list")
+  x.tail = x.tail + 1
+  x[x.tail] = v
+  return _l_len(x)
+end
+
 -- sets
 
 local sadd = function(self,k,...)
@@ -515,6 +594,14 @@ local methods = {
   hset = hset,
   hsetnx = hsetnx,
   hvals = hvals,
+  -- lists
+  lindex = lindex,
+  llen = llen,
+  lpop = lpop,
+  lpush = lpush,
+  lrange = lrange,
+  rpop = rpop,
+  rpush = rpush,
   -- sets
   sadd = sadd,
   scard = scard,
