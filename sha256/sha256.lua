@@ -9,18 +9,16 @@ local band,bor,bxor,bnot = bit.band,bit.bor,bit.bxor,bit.bnot
 local rshift,rrot = bit.rshift,bit.ror
 
 local ui32_8 = ffi.typeof("uint32_t[8]")
-local ui32_64 = ffi.typeof("uint32_t[64]")
 local uchar_32 = ffi.typeof("unsigned char[32]")
 local uchar_256 = ffi.typeof("unsigned char[256]")
 local uchar_vla = ffi.typeof("unsigned char[?]")
 
-local _H = {
+local H = ui32_8(
   0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-  0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
-}
-local H = ui32_8(); for i=0,8-1 do H[i] = _H[i+1] end
+  0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+)
 
-local _K = {
+local K = ffi.new("uint32_t[64]",
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
   0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
   0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -36,9 +34,8 @@ local _K = {
   0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
   0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
   0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-  0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
-}
-local K = ui32_64(); for i=0,64-1 do K[i] = _K[i+1] end
+  0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+)
 
 local tohex = function(buf,n)
   local x = ffi.cast("unsigned char*",buf)
