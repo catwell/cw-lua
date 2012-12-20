@@ -40,22 +40,36 @@ local empty = function(self,k)
   else print(self.ktype); error("unsupported") end
 end
 
+local chkarg = function(x)
+  if type(x) == "number" then x = tostring(x) end
+  assert(type(x) == "string")
+  return x
+end
+
+local chkargs = function(n,...)
+  local arg = {...}
+  assert(#arg == n)
+  for i=1,n do arg[i] = chkarg(arg[i]) end
+  return unpack(arg)
+end
+
 local getargs = function(...)
   local arg = {...}
   local n = #arg; assert(n > 0)
-  for i=1,n do assert(type(arg[i]) == "string") end
+  for i=1,n do arg[i] = chkarg(arg[i]) end
   return arg
 end
 
 local getargs_as_map = function(...)
   local arg,r = getargs(...),{}
-  if (#arg == 1) and type(arg[1] == "table") then
-    r = arg[1]
-  else
-    assert(#arg%2 == 0)
-    for i=0,#arg/2-1 do r[arg[2*i+1]] = arg[2*i+2] end
-  end
+  assert(#arg%2 == 0)
+  for i=0,#arg/2-1 do r[arg[2*i+1]] = arg[2*i+2] end
   return r
+end
+
+local chkargs_wrap = function(f,n)
+  assert( (type(f) == "function") and (type(n) == "number") )
+  return function(self,...) return f(self,chkargs(n,...)) end
 end
 
 local lset_to_list = function(s)
@@ -89,6 +103,7 @@ local exists = function(self,k)
 end
 
 local keys = function(self,pattern)
+  assert(type(pattern) == "string")
   -- We want to convert the Redis pattern to a Lua pattern.
   -- Start by escaping dashes *outside* character classes.
   -- We also need to escape percents here.
@@ -138,7 +153,7 @@ local randomkey = function(self)
 end
 
 local rename = function(self,k,k2)
-  assert((k ~= k2) and self[k] and (type(k2) == "string"))
+  assert((k ~= k2) and self[k])
   self[k2] = self[k]
   self[k] = nil
   return true
@@ -157,7 +172,6 @@ end
 local set
 
 local append = function(self,k,v)
-  assert(type(v) == "string")
   local x = xgetw(self,k,"string")
   x[1] = (x[1] or "") .. v
   return #x[1]
@@ -169,10 +183,10 @@ local get = function(self,k)
 end
 
 local getrange = function(self,k,i1,i2)
+  k = chkarg(k)
+  assert( (type(i1) == "number") and (type(i2) == "number") )
   local x = xgetr(self,k,"string")
   x = x[1] or ""
-  i1,i2 = tonumber(i1),tonumber(i2)
-  assert(i1 and i2)
   if i1 >= 0 then i1 = i1 + 1 end
   if i2 >= 0 then i2 = i2 + 1 end
   return x:sub(i1,i2)
@@ -206,7 +220,6 @@ local msetnx = function(self,...)
 end
 
 set = function(self,k,v)
-  assert(type(v) == "string")
   self[k] = {ktype="string",value={v}}
   return true
 end
@@ -220,10 +233,10 @@ local setnx = function(self,k,v)
 end
 
 local setrange = function(self,k,i,s)
+  local k,s = chkargs(2,k,s)
+  assert( (type(i) == "number") and  (i >= 0) )
   local x = xgetw(self,k,"string")
   local y = x[1] or ""
-  i = tonumber(i)
-  assert(i and (i >= 0) and (type(s) == "string"))
   local ly,ls = #y,#s
   if i > ly then -- zero padding
     local t = {}
@@ -261,7 +274,6 @@ local hexists = function(self,k,k2)
 end
 
 hget = function(self,k,k2)
-  assert((type(k2) == "string"))
   local x = xgetr(self,k,"hash")
   return x[k2]
 end
@@ -269,14 +281,14 @@ end
 local hgetall = function(self,k)
   local x = xgetr(self,k,"hash")
   local r = {}
-  for k,v in pairs(x) do r[k] = v end
+  for _k,v in pairs(x) do r[_k] = v end
   return r
 end
 
 local hkeys = function(self,k)
   local x = xgetr(self,k,"hash")
   local r = {}
-  for k,_ in pairs(x) do r[#r+1] = k end
+  for _k,_ in pairs(x) do r[#r+1] = _k end
   return r
 end
 
@@ -286,25 +298,23 @@ local hlen = function(self,k)
 end
 
 local hmget = function(self,k,k2s)
+  k = chkarg(k)
   assert((type(k2s) == "table"))
   local r = {}
   local x = xgetr(self,k,"hash")
-  for i=1,#k2s do r[i] = x[k2s[i]] end
+  for i=1,#k2s do r[i] = x[chkarg(k2s[i])] end
   return r
 end
 
 local hmset = function(self,k,m)
+  k = chkarg(k)
   assert((type(m) == "table"))
   local x = xgetw(self,k,"hash")
-  for k,v in pairs(m) do
-    assert((type(k) == "string") and (type(v) == "string"))
-    x[k] = v
-  end
+  for _k,v in pairs(m) do x[chkarg(_k)] = chkarg(v) end
   return true
 end
 
 local hset = function(self,k,k2,v)
-  assert((type(k2) == "string") and (type(v) == "string"))
   local x = xgetw(self,k,"hash")
   local r = not x[k2]
   x[k2] = v
@@ -312,7 +322,6 @@ local hset = function(self,k,k2,v)
 end
 
 local hsetnx = function(self,k,k2,v)
-  assert((type(k2) == "string") and (type(v) == "string"))
   local x = xgetw(self,k,"hash")
   if x[k2] == nil then
     x[k2] = v
@@ -344,6 +353,7 @@ local _l_len = function(x)
 end
 
 local lindex = function(self,k,i)
+  k = chkarg(k)
   assert(type(i) == "number")
   local x = xgetr(self,k,"list")
   return x[_l_real_i(x,i)]
@@ -365,7 +375,6 @@ local lpop = function(self,k)
 end
 
 local lpush = function(self,k,v)
-  assert(type(v) == "string")
   local x = xgetw(self,k,"list")
   x[x.head] = v
   x.head = x.head - 1
@@ -373,6 +382,8 @@ local lpush = function(self,k,v)
 end
 
 local lrange = function(self,k,i1,i2)
+  k = chkarg(k)
+  assert( (type(i1) == "number") and (type(i2) == "number") )
   local x,r = xgetr(self,k,"list"),{}
   i1 = math.max(_l_real_i(x,i1),x.head+1)
   i2 = math.min(_l_real_i(x,i2),x.tail)
@@ -393,7 +404,6 @@ local rpop = function(self,k)
 end
 
 local rpush = function(self,k,v)
-  assert(type(v) == "string")
   local x = xgetw(self,k,"list")
   x.tail = x.tail + 1
   x[x.tail] = v
@@ -403,6 +413,7 @@ end
 -- sets
 
 local sadd = function(self,k,...)
+  k = chkarg(k)
   local arg = getargs(...)
   local x,r = xgetw(self,k,"set"),0
   for i=1,#arg do
@@ -420,6 +431,7 @@ local scard = function(self,k)
 end
 
 local _sdiff = function(self,k,...)
+  k = chkarg(k)
   local arg = getargs(...)
   local x = xgetr(self,k,"set")
   local r = {}
@@ -436,13 +448,14 @@ local sdiff = function(self,k,...)
 end
 
 local sdiffstore = function(self,k2,k,...)
-  assert(type(k2) == "string")
+  k2 = chkarg(k2)
   local x = _sdiff(self,k,...)
   self[k2] = {ktype="set",value=x}
   return nkeys(x)
 end
 
 local _sinter = function(self,k,...)
+  k = chkarg(k)
   local arg = getargs(...)
   local x = xgetr(self,k,"set")
   local r = {}
@@ -462,14 +475,13 @@ local sinter = function(self,k,...)
 end
 
 local sinterstore = function(self,k2,k,...)
-  assert(type(k2) == "string")
+  k2 = chkarg(k2)
   local x = _sinter(self,k,...)
   self[k2] = {ktype="set",value=x}
   return nkeys(x)
 end
 
 local sismember = function(self,k,v)
-  assert((type(v) == "string"))
   local x = xgetr(self,k,"set")
   return not not x[v]
 end
@@ -511,6 +523,7 @@ local srandmember = function(self,k)
 end
 
 local srem = function(self,k,...)
+  k = chkarg(k)
   local arg = getargs(...)
   local x,r = xgetw(self,k,"set"),0
   for i=1,#arg do
@@ -539,7 +552,7 @@ local sunion = function(self,k,...)
 end
 
 local sunionstore = function(self,k2,k,...)
-  assert(type(k2) == "string")
+  k2 = chkarg(k2)
   local x = _sunion(self,k,...)
   self[k2] = {ktype="set",value=x}
   return nkeys(x)
@@ -548,7 +561,6 @@ end
 -- connection
 
 local echo = function(self,v)
-  assert(type(v) == "string")
   return v
 end
 
@@ -568,61 +580,61 @@ end
 local methods = {
   -- keys
   del = del, -- (...) -> #removed
-  exists = exists, -- (k) -> exists?
+  exists = chkargs_wrap(exists,1), -- (k) -> exists?
   keys = keys, -- (pattern) -> list of keys
-  ["type"] = _type, -- (k) -> [string|list|set|zset|hash|none]
+  ["type"] = chkargs_wrap(_type,1), -- (k) -> [string|list|set|zset|hash|none]
   randomkey = randomkey, -- () -> [k|nil]
-  rename = rename, -- (k,k2) -> true
-  renamenx = renamenx, -- (k,k2) -> renamed? (i.e. !existed? k2)
+  rename = chkargs_wrap(rename,2), -- (k,k2) -> true
+  renamenx = chkargs_wrap(renamenx,2), -- (k,k2) -> renamed? (i.e. !existed? k2)
   -- strings
-  append = append, -- (k,v) -> #new
-  get = get, -- (k) -> [v|nil]
+  append = chkargs_wrap(append,2), -- (k,v) -> #new
+  get = chkargs_wrap(get,1), -- (k) -> [v|nil]
   getrange = getrange, -- (k,start,end) -> string
-  getset = getset, -- (k,v) -> [oldv|nil]
+  getset = chkargs_wrap(getset,2), -- (k,v) -> [oldv|nil]
   mget = mget, -- (k1,...) -> {v1,...}
   mset = mset, -- (k1,v1,...) -> true
   msetnx = msetnx, -- (k1,v1,...) -> worked? (i.e. !existed? any k)
-  set = set, -- (k,v) -> true
-  setnx = setnx, -- (k,v) -> worked? (i.e. !existed?)
+  set = chkargs_wrap(set,2), -- (k,v) -> true
+  setnx = chkargs_wrap(setnx,2), -- (k,v) -> worked? (i.e. !existed?)
   setrange = setrange, -- (k,offset,val) -> #new
-  strlen = strlen, -- (k) -> [#v|0]
+  strlen = chkargs_wrap(strlen,1), -- (k) -> [#v|0]
   -- hashes
   hdel = hdel, -- (k,sk1,...) -> #removed
-  hexists = hexists, -- (k,sk) -> exists?
-  hget = hget, -- (k,sk) -> v
-  hgetall = hgetall, -- (k) -> map
-  hkeys = hkeys, -- (k) -> keys
-  hlen = hlen, -- (k) -> [#sk|0]
-  hmget = hmget, -- (k,sk1,...) -> {v1,...}
-  hmset = hmset, -- (k,sk1,v1,...) -> true
-  hset = hset, -- (k,sk1,v1) -> !existed?
-  hsetnx = hsetnx, -- (k,sk1,v1) -> worked? (i.e. !existed?)
-  hvals = hvals, -- (k) -> values
+  hexists = chkargs_wrap(hexists,2), -- (k,sk) -> exists?
+  hget = chkargs_wrap(hget,2), -- (k,sk) -> v
+  hgetall = chkargs_wrap(hgetall,1), -- (k) -> map
+  hkeys = chkargs_wrap(hkeys,1), -- (k) -> keys
+  hlen = chkargs_wrap(hlen,1), -- (k) -> [#sk|0]
+  hmget = hmget, -- (k,{sk1,...}) -> {v1,...}
+  hmset = hmset, -- (k,{sk1=v1,...}) -> true
+  hset = chkargs_wrap(hset,3), -- (k,sk1,v1) -> !existed?
+  hsetnx = chkargs_wrap(hsetnx,3), -- (k,sk1,v1) -> worked? (i.e. !existed?)
+  hvals = chkargs_wrap(hvals,1), -- (k) -> values
   -- lists
   lindex = lindex, -- (k,i) -> v
-  llen = llen, -- (k) -> #list
-  lpop = lpop, -- (k) -> v
-  lpush = lpush, -- (k,v1,...) -> #list (after)
+  llen = chkargs_wrap(llen,1), -- (k) -> #list
+  lpop = chkargs_wrap(lpop,1), -- (k) -> v
+  lpush = chkargs_wrap(lpush,2), -- (k,v1) -> #list (after) -- TODO variadic
   lrange = lrange, -- (k,start,stop) -> list
-  rpop = rpop, -- (k) -> v
-  rpush = rpush, -- (k,v1,...) -> #list (after)
+  rpop = chkargs_wrap(rpop,1), -- (k) -> v
+  rpush = chkargs_wrap(rpush,2), -- (k,v1) -> #list (after) -- TODO variadic
   -- sets
   sadd = sadd, -- (k,v1,...) -> #added
-  scard = scard, -- (k) -> [n|0]
+  scard = chkargs_wrap(scard,1), -- (k) -> [n|0]
   sdiff = sdiff, -- (k1,...) -> set (of elements in k1 & not in any of ...)
   sdiffstore = sdiffstore, -- (k0,k1,...) -> #set at k0
   sinter = sinter, -- (k1,...) -> set
   sinterstore = sinterstore, -- (k0,k1,...) -> #set at k0
-  sismember = sismember, -- (k,v) -> member?
-  smembers = smembers, -- (k) -> set
-  smove = smove, -- (k1,k2,v) -> moved? (i.e. !member? k1)
-  spop = spop, -- (k) -> [v|nil]
-  srandmember = srandmember, -- (k) -> v (note: count not supported)
+  sismember = chkargs_wrap(sismember,2), -- (k,v) -> member?
+  smembers = chkargs_wrap(smembers,1), -- (k) -> set
+  smove = chkargs_wrap(smove,3), -- (k1,k2,v) -> moved? (i.e. !member? k1)
+  spop = chkargs_wrap(spop,1), -- (k) -> [v|nil]
+  srandmember = chkargs_wrap(srandmember,1), -- (k) -> v -- TODO support count
   srem = srem, -- (k,v1,...) -> #removed
   sunion = sunion, -- (k1,...) -> set
   sunionstore = sunionstore, -- (k0,k1,...) -> #set at k0
   -- connection
-  echo = echo, -- (v) -> v
+  echo = chkargs_wrap(echo,1), -- (v) -> v
   ping = ping, -- () -> PONG
   -- server
   flushall = flushdb, -- () -> true

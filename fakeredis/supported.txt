@@ -71,7 +71,7 @@
 [ ] linsert
 [x] llen
 [x] lpop
-[x] lpush
+[~] lpush
 [ ] lpushx
 [x] lrange
 [ ] lrem
@@ -79,7 +79,7 @@
 [ ] ltrim
 [x] rpop
 [ ] rpoplpush
-[x] rpush
+[~] rpush
 [ ] rpushx
 
 # sets
@@ -94,7 +94,7 @@
 [x] smembers
 [x] smove
 [x] spop
-[x] srandmember
+[~] srandmember
 [x] srem
 [x] sunion
 [x] sunionstore
