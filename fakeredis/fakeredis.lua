@@ -257,6 +257,7 @@ end
 -- hashes
 
 local hdel = function(self,k,...)
+  k = chkarg(k)
   local arg = getargs(...)
   local r = 0
   local x = xgetw(self,k,"hash")
