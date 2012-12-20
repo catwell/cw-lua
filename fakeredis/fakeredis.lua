@@ -306,8 +306,9 @@ end
 local hset = function(self,k,k2,v)
   assert((type(k2) == "string") and (type(v) == "string"))
   local x = xgetw(self,k,"hash")
+  local r = not x[k2]
   x[k2] = v
-  return true
+  return r
 end
 
 local hsetnx = function(self,k,k2,v)
