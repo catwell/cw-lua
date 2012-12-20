@@ -8,7 +8,10 @@ end
 
 local xgetr = function(self,k,ktype)
   if self[k] then
-    assert(self[k].ktype == ktype)
+    assert(
+      (self[k].ktype == ktype),
+      "ERR Operation against a key holding the wrong kind of value"
+    )
     assert(self[k].value)
     return self[k].value
   else return xdefv(ktype) end
