@@ -40,6 +40,13 @@ local empty = function(self,k)
   else print(self.ktype); error("unsupported") end
 end
 
+local toint = function(x)
+  if type(x) == "string" then x = tonumber(x) end
+  if (type(x) == "number") and (math.floor(x) == x) then
+    return x
+  else return nil end
+end
+
 local chkarg = function(x)
   if type(x) == "number" then x = tostring(x) end
   assert(type(x) == "string")
@@ -198,6 +205,23 @@ local getset = function(self,k,v)
   return r
 end
 
+local incrby
+
+local incr = function(self,k)
+  return incrby(self,k,1)
+end
+
+incrby = function(self,k,n)
+  k = chkarg(k)
+  assert(type(n) == "number")
+  local x = xgetw(self,k,"string")
+  local i = toint(x[1] or 0)
+  assert(i,"ERR value is not an integer or out of range")
+  i = i+n
+  x[1] = tostring(i)
+  return i
+end
+
 local mget = function(self,...)
   local arg,r = getargs(...),{}
   for i=1,#arg do r[i] = get(self,arg[i]) end
@@ -284,6 +308,17 @@ local hgetall = function(self,k)
   local r = {}
   for _k,v in pairs(x) do r[_k] = v end
   return r
+end
+
+local hincrby = function(self,k,k2,n)
+  k,k2 = chkarg(k),chkarg(k2)
+  assert(type(n) == "number")
+  local x = xgetw(self,k,"hash")
+  local i = toint(x[k2] or 0)
+  assert(i,"ERR value is not an integer or out of range")
+  i = i+n
+  x[k2] = tostring(i)
+  return i
 end
 
 local hkeys = function(self,k)
@@ -592,6 +627,8 @@ local methods = {
   get = chkargs_wrap(get,1), -- (k) -> [v|nil]
   getrange = getrange, -- (k,start,end) -> string
   getset = chkargs_wrap(getset,2), -- (k,v) -> [oldv|nil]
+  incr = chkargs_wrap(incr,1), -- (k) -> new
+  incrby = incrby, -- (k,n) -> new
   mget = mget, -- (k1,...) -> {v1,...}
   mset = mset, -- (k1,v1,...) -> true
   msetnx = msetnx, -- (k1,v1,...) -> worked? (i.e. !existed? any k)
@@ -604,6 +641,7 @@ local methods = {
   hexists = chkargs_wrap(hexists,2), -- (k,sk) -> exists?
   hget = chkargs_wrap(hget,2), -- (k,sk) -> v
   hgetall = chkargs_wrap(hgetall,1), -- (k) -> map
+  hincrby = hincrby, -- (k,sk,n) -> new
   hkeys = chkargs_wrap(hkeys,1), -- (k) -> keys
   hlen = chkargs_wrap(hlen,1), -- (k) -> [#sk|0]
   hmget = hmget, -- (k,{sk1,...}) -> {v1,...}

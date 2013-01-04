@@ -32,8 +32,8 @@
 [ ] getbit
 [x] getrange
 [x] getset
-[ ] incr
-[ ] incrby
+[x] incr
+[x] incrby
 [ ] incrbyfloat
 [x] mget
 [x] mset
@@ -52,7 +52,7 @@
 [x] hexists
 [x] hget
 [x] hgetall
-[ ] hincrby
+[x] hincrby
 [ ] hincrbyfloat
 [x] hkeys
 [x] hlen
