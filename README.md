@@ -8,5 +8,9 @@ that do not deserve their own repository.
 
 - sha256: a SHA-256 implementation in pure LuaJIT+FFI.
 - lua-pipe: syntax experiment, Lua version of Pipe in Python.
-- fakeredis: a Redis mock (same interface as redis-lua). WIP.
 - cwtools: a small collection of useful functions.
+
+## Graduated:
+
+- [fakeredis](https://github.com/catwell/fakeredis): a Redis mock
+(same interface as redis-lua).
