@@ -15,6 +15,7 @@ Projects I become more serious about graduate to their own repositories.
 - lualua: an unfinished implementation of Lua 5.2 in LuaJIT.
 - luajit-msgpack: LuaJIT FFI-based module for MessagePack.
 - ecds-lua: implementation of some Eventually-Consistent Data Structures.
+- lua-zerorpc: [ZeroRPC](http://zerorpc.dotcloud.com/) implementation.
 
 ## Graduated:
 
