@@ -14,6 +14,7 @@ Projects I become more serious about graduate to their own repositories.
 - cwtools: a small collection of useful functions.
 - lualua: an unfinished implementation of Lua 5.2 in LuaJIT.
 - luajit-msgpack: LuaJIT FFI-based module for MessagePack.
+- ecds-lua: implementation of some Eventually-Consistent Data Structures.
 
 ## Graduated:
 
