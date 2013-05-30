@@ -65,8 +65,6 @@ wrap = function(job)
   local job_methods = {
     show = show,
     delete = delete,
-    as_string = as_string,
-    valid = valid,
   }
   return setmetatable(job,{__index = job_methods})
 end
