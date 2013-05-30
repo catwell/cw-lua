@@ -40,13 +40,29 @@ init = function()
   valid = CFG.valid or identity
 end
 
+local wrap_body = function(body)
+  if not body then return nil end
+  local body_methods = {
+    as_string = as_string,
+    valid = valid,
+    encode = encode,
+  }
+  return setmetatable(body,{__index = body_methods})
+end
+
+get_body = function(job)
+  if job.data then
+    return wrap_body(decode(job.data))
+  else return nil end
+end
+
 show = function(job)
   if not job then
     printf("==> no job <==\n")
   elseif job.deleted then
     printf("==> deleted (%d) <==\n",job.id)
   else
-    printf("==> %d <==\n%s\n",job.id,as_string(decode(job.data)))
+    printf("==> %d <==\n%s\n",job.id,as_string(get_body(job)))
   end
 end
 
@@ -60,11 +76,12 @@ delete = function(job,force)
   job.data = nil
 end
 
-wrap = function(job)
+wrap_job = function(job)
   if not job then return nil end
   local job_methods = {
     show = show,
     delete = delete,
+    body = get_body,
   }
   return setmetatable(job,{__index = job_methods})
 end
@@ -75,17 +92,17 @@ peek = function()
     printf("ERROR: %s\n",job)
   else
     show(job)
-    return wrap(job)
+    return wrap_job(job)
   end
 end
 
-put = function(data,pri,delay,ttr)
-  assert(valid(data))
+put = function(body,pri,delay,ttr)
+  assert(valid(body))
   BS:put(
     pri or 2048,
     delay or 0,
     ttr or 60,
-    encode(data)
+    encode(body)
   )
 end
 
