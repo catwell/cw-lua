@@ -16,6 +16,7 @@ Projects I become more serious about graduate to their own repositories.
 - luajit-msgpack: LuaJIT FFI-based module for MessagePack.
 - ecds-lua: implementation of some Eventually-Consistent Data Structures.
 - lua-zerorpc: [ZeroRPC](http://zerorpc.dotcloud.com/) implementation.
+- deque: simple deque implementation (similar to lists in fakeredis).
 
 ## Graduated:
 
