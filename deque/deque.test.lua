@@ -36,4 +36,10 @@ T:start("deque"); do
   T:eq( q:remove_right(3), true )
   T:eq( q:remove_left(4), true )
   T:eq( q:contents(), {3,4,4} )
+  local t = {}
+  for x in q:iter_left() do t[#t+1] = x end
+  T:eq( t, {3,4,4} )
+  t = {}
+  for x in q:iter_right() do t[#t+1] = x end
+  T:eq( t, {4,4,3} )
 end; T:done()

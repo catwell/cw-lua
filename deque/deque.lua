@@ -88,6 +88,26 @@ local contents = function(self)
   return r
 end
 
+local iter_right = function(self)
+  local i = self.tail+1
+  return function()
+    if i > self.head+1 then
+      i = i-1
+      return self[i]
+    end
+  end
+end
+
+local iter_left = function(self)
+  local i = self.head
+  return function()
+    if i < self.tail then
+      i = i+1
+      return self[i]
+    end
+  end
+end
+
 local methods = {
   push_right = push_right,
   push_left = push_left,
@@ -99,6 +119,8 @@ local methods = {
   rotate_left = rotate_left,
   remove_right = remove_right,
   remove_left = remove_left,
+  iter_right = iter_right,
+  iter_left = iter_left,
   length = length,
   is_empty = is_empty,
   contents = contents,
