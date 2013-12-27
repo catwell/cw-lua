@@ -4,11 +4,11 @@ local utils = require "utils"
 
 --- METHODS
 
-local incr = function(self,qty)
+local incr = function(self, qty)
   self.e[self.node] = self.e[self.node] + qty
 end
 
-local merge = function(self,other)
+local merge = function(self, other)
   for k,v in pairs(other.e) do
     if self.e[k] < v then self.e[k] = v end
   end
@@ -29,8 +29,8 @@ local methods = {
 --- CLASS
 
 local new = function(node)
-  local r = {node = node,e = utils.defmap(0)}
-  return setmetatable(r,{__index = methods})
+  local r = {node = node, e = utils.defmap(0)}
+  return setmetatable(r, {__index = methods})
 end
 
 return {

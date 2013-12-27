@@ -9,7 +9,7 @@ local utils = require "utils"
 --- METHODS
 
 local add = function(self, x)
-  local id = self.ids[self.node] +1
+  local id = self.ids[self.node] + 1
   self.ids[self.node] = id
   self.payload[x][self.node] = id
 end
@@ -18,10 +18,10 @@ local del = function(self, x)
   self.payload[x] = nil
 end
 
-local merge = function(self,other)
+local merge = function(self, other)
   -- merge adds
   for k,v in pairs(other.payload) do
-    for node, uid in pairs(v) do
+    for node,uid in pairs(v) do
       if uid > self.ids[node] then
         self.payload[k][node] = uid
       end
@@ -29,7 +29,7 @@ local merge = function(self,other)
   end
   -- merge removes
   for k,v in pairs(self.payload) do
-    for node, uid in pairs(v) do
+    for node,uid in pairs(v) do
       if other.ids[node] >= uid then
         v[node] = other.payload[k][node]
       end
@@ -72,7 +72,7 @@ local new = function(node)
     ids = utils.defmap(0),
     payload = utils.defmap2(_maker),
   }
-  return setmetatable(r,{__index = methods})
+  return setmetatable(r, {__index = methods})
 end
 
 return {

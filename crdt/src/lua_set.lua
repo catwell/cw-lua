@@ -4,7 +4,7 @@
 
 local methods -- filled at bottom
 
-local add = function(self,x)
+local add = function(self, x)
   self[x] = true
 end
 
@@ -23,26 +23,26 @@ end
 local copy = function(self)
   local r = {}
   for k,_ in  pairs(self) do r[k] = true end
-  return setmetatable(r,{__index = methods})
+  return setmetatable(r, {__index = methods})
 end
 
-local del = function(self,x)
+local del = function(self, x)
   self[x] = nil
 end
 
-local has = function(self,x)
+local has = function(self, x)
   return not not self[x]
 end
 
-local s_add = function(self,other)
+local s_add = function(self, other)
   for k,_ in pairs(other) do self[k] = true end
 end
 
-local s_del = function(self,other)
+local s_del = function(self, other)
   for k,_ in pairs(other) do self[k] = nil end
 end
 
-local s_inter = function(self,other)
+local s_inter = function(self, other)
   for k,_ in pairs(self) do
     if not other[k] then self[k] = nil end
   end
@@ -64,7 +64,7 @@ methods = {
 
 local new = function()
   local r = {}
-  return setmetatable(r,{__index = methods})
+  return setmetatable(r, {__index = methods})
 end
 
 return {

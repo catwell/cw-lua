@@ -4,15 +4,15 @@ local LSet = require "lua_set"
 
 --- METHODS
 
-local add = function(self,x)
+local add = function(self, x)
   self.e:add(x)
 end
 
-local has = function(self,x)
+local has = function(self, x)
   return self.e:has(x)
 end
 
-local merge = function(self,other)
+local merge = function(self, other)
   self.e:s_add(other:value())
 end
 
@@ -31,7 +31,7 @@ local methods = {
 
 local new = function()
   local r = {e = LSet.new()}
-  return setmetatable(r,{__index = methods})
+  return setmetatable(r, {__index = methods})
 end
 
 return {

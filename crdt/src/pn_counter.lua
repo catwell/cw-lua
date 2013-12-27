@@ -4,15 +4,15 @@ local GCounter = require "g_counter"
 
 --- METHODS
 
-local decr = function(self,qty)
+local decr = function(self, qty)
   self.n:incr(qty)
 end
 
-local incr = function(self,qty)
+local incr = function(self, qty)
   self.p:incr(qty)
 end
 
-local merge = function(self,other)
+local merge = function(self, other)
   self.p:merge(other.p)
   self.n:merge(other.n)
 end
@@ -36,7 +36,7 @@ local new = function(node)
     p = GCounter.new(node),
     n = GCounter.new(node),
   }
-  return setmetatable(r,{__index = methods})
+  return setmetatable(r, {__index = methods})
 end
 
 return {

@@ -6,18 +6,18 @@ local utils = require "utils"
 
 --- METHODS
 
-local add = function(self,x)
+local add = function(self, x)
   local uid = utils.mkuid()
   self.e[x].c:add(uid)
 end
 
-local del = function(self,x)
+local del = function(self, x)
   local t = self.e[x].c:as_list()
   for i=1,#t do self.e[x].r:add(t[i]) end
   self.e[x].c = LSet.new()
 end
 
-local merge = function(self,other)
+local merge = function(self, other)
   for k,v in pairs(other.e) do
     -- merge adds
     local t = v.c:as_list()
@@ -69,7 +69,7 @@ local new = function(node)
     node = node,
     e = utils.defmap2(_maker),
   }
-  return setmetatable(r,{__index = methods})
+  return setmetatable(r, {__index = methods})
 end
 
 return {
