@@ -15,7 +15,7 @@ local add = function(self, x)
 end
 
 local del = function(self, x)
-  self.payload[x][self.node] = nil
+  self.payload[x] = nil
 end
 
 local merge = function(self,other)

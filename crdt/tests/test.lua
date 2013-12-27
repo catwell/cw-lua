@@ -146,6 +146,19 @@ local test_or = function(class)
 
   sa = class.new("a")
   sb = class.new("b")
+
+  sa:add("a")
+  sb:merge(sa)
+  set_test(sb,{"a"})
+  sb:del("a")
+  set_test(sb,{})
+  sa:merge(sb)
+  set_test(sa,{})
+
+  printf(".")
+
+  sa = class.new("a")
+  sb = class.new("b")
   sc = class.new("c")
 
   sb:add("a")
