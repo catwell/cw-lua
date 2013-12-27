@@ -4,8 +4,6 @@ local GSet = require "g_set"
 local LSet = require "lua_set"
 local utils = require "utils"
 
---- METHODS
-
 local uses = function(self,x)
   if not self.e[x] then
     self.e[x] = {
@@ -14,6 +12,8 @@ local uses = function(self,x)
     }
   end
 end
+
+--- METHODS
 
 local add = function(self,x)
   uses(self,x)

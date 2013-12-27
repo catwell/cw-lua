@@ -6,6 +6,7 @@ local PNCounter = require "pn_counter"
 local GSet = require "g_set"
 local TwoPSet = require "2p_set"
 local ORSet = require "or_set"
+local OptORSet = require "opt_or_set"
 
 local printf = function(p,...)
   io.stdout:write(string.format(p,...)); io.stdout:flush()
@@ -147,6 +148,27 @@ printf(".")
 sa = ORSet.new("a")
 sb = ORSet.new("b")
 sc = ORSet.new("c")
+
+sb:add("a")
+sa:add("a")
+sc:merge(sb)
+sc:merge(sa)
+sa:del("a")
+sa:merge(sb)
+sc:merge(sa)
+
+set_test(sa,{"a"})
+set_test(sc,{"a"})
+
+print(" OK")
+
+printf("Optimized OR-Set tests ")
+
+printf(".")
+
+sa = OptORSet.new("a")
+sb = OptORSet.new("b")
+sc = OptORSet.new("c")
 
 sb:add("a")
 sa:add("a")
