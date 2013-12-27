@@ -6,16 +6,12 @@
 local LSet = require "lua_set"
 local utils = require "utils"
 
-local next_uid = function(self)
-  local x = self.ids[self.node] + 1
-  self.ids[self.node] = x
-  return x
-end
-
 --- METHODS
 
 local add = function(self, x)
-  self.payload[x][self.node] = next_uid(self)
+  local id = self.ids[self.node] +1
+  self.ids[self.node] = id
+  self.payload[x][self.node] = id
 end
 
 local del = function(self, x)
