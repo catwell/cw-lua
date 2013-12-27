@@ -1,20 +1,16 @@
 -- G-Counter
 
---- UTILS
-
-local nval = function(n)
-  if n then return n else return 0 end
-end
+local utils = require "utils"
 
 --- METHODS
 
 local incr = function(self,qty)
-  self.e[self.node] = nval(self.e[self.node]) + qty
+  self.e[self.node] = self.e[self.node] + qty
 end
 
 local merge = function(self,other)
   for k,v in pairs(other.e) do
-    if nval(self.e[k]) < v then self.e[k] = v end
+    if self.e[k] < v then self.e[k] = v end
   end
 end
 
@@ -33,7 +29,7 @@ local methods = {
 --- CLASS
 
 local new = function(node)
-  local r = {node = node,e = {}}
+  local r = {node = node,e = utils.defmap(0)}
   return setmetatable(r,{__index = methods})
 end
 
