@@ -10,9 +10,10 @@ local defmap = function(def)
   return setmetatable({}, {__index = function() return def end})
 end
 
-local defmap_of_tables = function()
+local defmap2 = function(maker)
+  assert (type(maker) == "function")
   local f = function(t, k)
-    t[k] = {}
+    t[k] = maker()
     return t[k]
   end
   return setmetatable({}, {__index = f})
@@ -20,6 +21,6 @@ end
 
 return {
   mkuid = mkuid, -- () -> uid
-  defmap = defmap, -- ([def]) -> defmap
-  defmap_of_tables = defmap_of_tables, -- () -> defmap
+  defmap = defmap, -- (defval) -> defmap
+  defmap2 = defmap2, -- (defval_f) -> defmap
 }

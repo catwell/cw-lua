@@ -4,25 +4,14 @@ local GSet = require "g_set"
 local LSet = require "lua_set"
 local utils = require "utils"
 
-local uses = function(self,x)
-  if not self.e[x] then
-    self.e[x] = {
-      c = LSet.new(),
-      r = GSet.new(),
-    }
-  end
-end
-
 --- METHODS
 
 local add = function(self,x)
-  uses(self,x)
   local uid = utils.mkuid()
   self.e[x].c:add(uid)
 end
 
 local del = function(self,x)
-  uses(self,x)
   local t = self.e[x].c:as_list()
   for i=1,#t do self.e[x].r:add(t[i]) end
   self.e[x].c = LSet.new()
@@ -30,7 +19,6 @@ end
 
 local merge = function(self,other)
   for k,v in pairs(other.e) do
-    uses(self,k)
     -- merge adds
     local t = v.c:as_list()
     for i=1,#t do
@@ -68,9 +56,19 @@ local methods = {
 
 --- CLASS
 
+local _maker = function()
+  return {
+    c = LSet.new(),
+    r = GSet.new(),
+  }
+end
+
 local new = function(node)
   if not node then error("invalid") end
-  local r = {node = node,e = {}}
+  local r = {
+    node = node,
+    e = utils.defmap2(_maker),
+  }
   return setmetatable(r,{__index = methods})
 end
 

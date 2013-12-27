@@ -63,12 +63,14 @@ local methods = {
 
 --- CLASS
 
+local _maker = function() return {} end
+
 local new = function(node)
   if not node then error("invalid") end
   local r = {
     node = node,
     ids = utils.defmap(0),
-    payload = utils.defmap_of_tables(),
+    payload = utils.defmap2(_maker),
   }
   return setmetatable(r,{__index = methods})
 end
