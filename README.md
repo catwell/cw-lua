@@ -14,7 +14,7 @@ Projects I become more serious about graduate to their own repositories.
 - cwtools: a small collection of useful functions.
 - lualua: an unfinished implementation of Lua 5.2 in LuaJIT.
 - luajit-msgpack: LuaJIT FFI-based module for MessagePack.
-- ecds-lua: implementation of some Eventually-Consistent Data Structures.
+- crdt: implementation of some Conflict-Free Replicated Data Types in Lua.
 - lua-zerorpc: [ZeroRPC](http://zerorpc.dotcloud.com/) implementation.
 - deque: simple deque implementation (similar to lists in fakeredis).
 
