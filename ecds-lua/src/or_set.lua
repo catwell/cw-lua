@@ -1,6 +1,5 @@
 -- OR-Set
 
-local USet = require "u_set"
 local GSet = require "g_set"
 local LSet = require "lua_set"
 local utils = require "utils"
@@ -10,7 +9,7 @@ local utils = require "utils"
 local uses = function(self,x)
   if not self.e[x] then
     self.e[x] = {
-      c = USet.new(),
+      c = GSet.new(),
       r = GSet.new(),
     }
   end
@@ -26,7 +25,7 @@ local del = function(self,x)
   uses(self,x)
   local t = self.e[x].c:value():as_list()
   for i=1,#t do self.e[x].r:add(t[i]) end
-  self.e[x].c = USet.new()
+  self.e[x].c = GSet.new()
 end
 
 local merge = function(self,other)
