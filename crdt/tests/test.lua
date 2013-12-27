@@ -93,7 +93,7 @@ print(" OK")
 
 --- SETS
 
-local sa,sb
+local sa,sb,sc
 
 printf("G-Set tests ")
 
@@ -141,44 +141,29 @@ set_test(sb,{"b","c"})
 
 print(" OK")
 
+local test_or = function(class)
+  printf(".")
+
+  sa = class.new("a")
+  sb = class.new("b")
+  sc = class.new("c")
+
+  sb:add("a")
+  sa:add("a")
+  sc:merge(sb)
+  sc:merge(sa)
+  sa:del("a")
+  sa:merge(sb)
+  sc:merge(sa)
+
+  set_test(sa,{"a"})
+  set_test(sc,{"a"})
+end
+
 printf("OR-Set tests ")
-
-printf(".")
-
-sa = ORSet.new("a")
-sb = ORSet.new("b")
-sc = ORSet.new("c")
-
-sb:add("a")
-sa:add("a")
-sc:merge(sb)
-sc:merge(sa)
-sa:del("a")
-sa:merge(sb)
-sc:merge(sa)
-
-set_test(sa,{"a"})
-set_test(sc,{"a"})
-
+test_or(ORSet)
 print(" OK")
 
 printf("Optimized OR-Set tests ")
-
-printf(".")
-
-sa = OptORSet.new("a")
-sb = OptORSet.new("b")
-sc = OptORSet.new("c")
-
-sb:add("a")
-sa:add("a")
-sc:merge(sb)
-sc:merge(sa)
-sa:del("a")
-sa:merge(sb)
-sc:merge(sa)
-
-set_test(sa,{"a"})
-set_test(sc,{"a"})
-
+test_or(OptORSet)
 print(" OK")
