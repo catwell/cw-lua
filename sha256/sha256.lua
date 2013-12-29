@@ -5,8 +5,8 @@
 local ffi = require "ffi"
 assert(ffi.abi("le"))
 
-local band,bor,bxor,bnot = bit.band,bit.bor,bit.bxor,bit.bnot
-local rshift,rrot = bit.rshift,bit.ror
+local band, bor, bxor, bnot = bit.band, bit.bor, bit.bxor, bit.bnot
+local rshift, rrot = bit.rshift, bit.ror
 
 local ui32_8 = ffi.typeof("uint32_t[8]")
 local uchar_32 = ffi.typeof("unsigned char[32]")
@@ -37,22 +37,22 @@ local K = ffi.new("uint32_t[64]",
   0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 )
 
-local tohex = function(buf,n)
-  local x = ffi.cast("unsigned char*",buf)
+local tohex = function(buf, n)
+  local x = ffi.cast("unsigned char*", buf)
   local t = {}
-  for i=0,n-1 do t[i+1] = string.format("%02x",x[i]) end
+  for i=0,n-1 do t[i+1] = string.format("%02x", x[i]) end
   return table.concat(t)
 end
 
-local write_i64 = function(buf,n)
-  local q,r = math.floor(n/2^32),n%(2^32)
+local write_i64 = function(buf, n)
+  local q, r = math.floor(n/2^32), n%(2^32)
   local j = 0
   for i=24,0,-8 do
-    buf[j] = band(rshift(q,i),0xff)
+    buf[j] = band(rshift(q, i), 0xff)
     j = j + 1
   end
   for i=24,0,-8 do
-    buf[j] = band(rshift(r,i),0xff)
+    buf[j] = band(rshift(r, i), 0xff)
     j = j + 1
   end
 end
@@ -61,17 +61,18 @@ local pad = function(msg) -- lua string -> buffer
   local l0 = #msg
   local n0 = ((56 - (l0 + 1)) % 64)
   local l1 = l0 + 1 + n0 + 8
-  assert(l1%64 == 0,l1)
+  assert(l1%64 == 0, l1)
   local nchunks = l1/64
   local r = uchar_vla(l1)
-  ffi.copy(r,msg,l0)
+  ffi.copy(r, msg, l0)
   r[l0] = 0x80
-  write_i64(r+l1-8,8*l0)
-  return r,nchunks
+  write_i64(r+l1-8, 8*l0)
+  return r, nchunks
 end
 
-local rcopy_32 = function(to,from,n) -- copy n 4B chunks, reversing them
-  local x,y = ffi.cast("unsigned char*",to),ffi.cast("unsigned char*",from)
+local rcopy_32 = function(to, from, n) -- copy n 4B chunks, reversing them
+  local x = ffi.cast("unsigned char*", to)
+  local y = ffi.cast("unsigned char*", from)
   for i=0,n-1 do
     for j=0,3 do
       x[4*i+j] = y[4*i+3-j]
@@ -79,47 +80,48 @@ local rcopy_32 = function(to,from,n) -- copy n 4B chunks, reversing them
   end
 end
 
-local transform = function(chunk,res) -- works on a 64B chunk
-  local a,b,c,d,e,f,g,h = res[0],res[1],res[2],res[3],res[4],res[5],res[6],res[7]
+local transform = function(chunk, res) -- works on a 64B chunk
+  local a, b, c, d = res[0], res[1], res[2], res[3]
+  local e, f, g, h = res[4], res[5], res[6], res[7]
   local buf = uchar_256()
-  rcopy_32(buf,chunk,16)
-  local w = ffi.cast("uint32_t *",buf)
-  local t1,t2,s0,s1
+  rcopy_32(buf, chunk,16)
+  local w = ffi.cast("uint32_t *", buf)
+  local t1, t2, s0, s1
   for i=16,64-1 do
-    t1,t2 = w[i-15],w[i-2]
-    s0 = bxor( rrot(t1,07), rrot(t1,18), rshift(t1,03) )
-    s1 = bxor( rrot(t2,17), rrot(t2,19), rshift(t2,10) )
+    t1, t2 = w[i-15], w[i-2]
+    s0 = bxor( rrot(t1, 07), rrot(t1, 18), rshift(t1, 03) )
+    s1 = bxor( rrot(t2, 17), rrot(t2, 19), rshift(t2, 10) )
     w[i] = w[i-16] + w[i-7] + s0 + s1
   end
   for i=0,64-1 do
-    s0 = bxor( rrot(a,02), rrot(a,13), rrot(a,22) )
-    s1 = bxor( rrot(e,06), rrot(e,11), rrot(e,25) )
-    t1 = s1 + h + w[i] + K[i] + bxor( band(e,f), band(bnot(e),g) )
-    t2 = s0 + bxor( band(a,b), band(a,c), band(b,c) )
-    a,b,c,d,e,f,g,h = t1+t2,a,b,c,d+t1,e,f,g
+    s0 = bxor( rrot(a, 02), rrot(a, 13), rrot(a, 22) )
+    s1 = bxor( rrot(e, 06), rrot(e, 11), rrot(e, 25) )
+    t1 = s1 + h + w[i] + K[i] + bxor( band(e, f), band(bnot(e), g) )
+    t2 = s0 + bxor( band(a ,b), band(a, c), band(b, c) )
+    a, b, c, d, e, f, g, h = t1+t2, a, b, c, d+t1, e, f, g
   end
-  res[0],res[1],res[2],res[3] = res[0]+a,res[1]+b,res[2]+c,res[3]+d
-  res[4],res[5],res[6],res[7] = res[4]+e,res[5]+f,res[6]+g,res[7]+h
+  res[0], res[1], res[2], res[3] = res[0]+a, res[1]+b, res[2]+c, res[3]+d
+  res[4], res[5], res[6], res[7] = res[4]+e, res[5]+f, res[6]+g, res[7]+h
 end
 
 local sha256_calc = function(input)
-  local chunks,nchunks = pad(input)
+  local chunks, nchunks = pad(input)
   local buf = ui32_8()
-  ffi.copy(buf,H,ffi.sizeof(ui32_8))
-  for i=0,nchunks-1 do transform(chunks+64*i,buf) end
+  ffi.copy(buf, H, ffi.sizeof(ui32_8))
+  for i=0,nchunks-1 do transform(chunks+64*i, buf) end
   local res = uchar_32()
-  rcopy_32(res,buf,8)
+  rcopy_32(res, buf, 8)
   return res
 end
 
 local sha256_bytes = function(input)
   local r = sha256_calc(input)
-  return ffi.string(r,32)
+  return ffi.string(r, 32)
 end
 
 local sha256_hex = function(input)
   local r = sha256_calc(input)
-  return tohex(r,32)
+  return tohex(r, 32)
 end
 
 return {

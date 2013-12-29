@@ -127,8 +127,8 @@ local methods = {
 }
 
 local new = function()
-  local r = {head=0,tail=0}
-  return setmetatable(r, {__index=methods})
+  local r = {head = 0, tail = 0}
+  return setmetatable(r, {__index = methods})
 end
 
 return {
