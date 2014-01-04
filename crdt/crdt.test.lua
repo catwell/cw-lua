@@ -138,3 +138,77 @@ end
 
 test_or_set_aw("OR-Set", ORSet)
 test_or_set_aw("Optimized OR-Set - Add Wins", OptORSet)
+
+T:start("Optimized OR-Set - Remove Wins"); do
+
+    local sa, sb, sc
+
+    sa = OptORSetRW.new("a")
+    sb = OptORSetRW.new("b")
+
+    sa:add("a")
+    sb:merge(sa)
+    T:seq2(sb, {"a"})
+    sb:del("a")
+    T:seq2(sb, {})
+    sa:merge(sb)
+    T:seq2(sa, {})
+
+    sa = OptORSetRW.new("a")
+    sb = OptORSetRW.new("b")
+
+    sa:del("a")
+    sb:add("a")
+    sb:merge(sa)
+    T:seq2(sb, {})
+
+    sa = OptORSetRW.new("a", true) -- strict
+    T:err(function() sa:del("a") end)
+
+    sa = OptORSetRW.new("a")
+    sb = OptORSetRW.new("b")
+
+    sa:add(1,2,3)
+    sb:merge(sa)
+    sa:del(1,4,5)
+    sb:del(2,4)
+    sb:add(4,6)
+    T:seq2(sb, {1,3,4,6})
+    sb:merge(sa)
+    T:seq2(sa, {2,3})
+    T:seq2(sb, {3,6})
+    sa:merge(sb)
+    T:seq2(sa, {3,6})
+
+    sa = OptORSetRW.new("a", true)
+    sb = OptORSetRW.new("b", true)
+
+    sa:add(7)
+    sb:merge(sa)
+    T:seq2(sb, {7})
+    sa:del(7)
+    sb:merge(sa)
+    T:seq2(sb, {})
+    sa:add(7)
+    sb:merge(sa)
+    T:seq2(sb, {7})
+    sb:del(7)
+    sb:merge(sa)
+    T:seq2(sb, {})
+
+    sa = OptORSetRW.new("a")
+    sb = OptORSetRW.new("b")
+    sc = OptORSetRW.new("c")
+
+    sb:add("a")
+    sa:add("a")
+    sc:merge(sb)
+    sc:merge(sa)
+    sa:del("a")
+    sa:merge(sb)
+    sc:merge(sa)
+
+    T:seq2(sa, {})
+    T:seq2(sc, {})
+
+end; T:done()
