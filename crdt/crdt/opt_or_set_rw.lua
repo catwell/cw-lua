@@ -6,6 +6,11 @@
 --
 -- Not entirely sure what I implemented is exactly what
 -- the authors had in mind though :)
+--
+-- Unlike in the OR-Set (Add Wins), empty table values in
+-- the payload do mean something, so they cannot be GCd.
+-- This increases the worst-case space complexity to
+-- O( elements + nodes * (removes + 1) ).
 
 local LSet = require "lua_set"
 local utils = require "utils"
@@ -20,14 +25,11 @@ local incr_id = function(self)
   return id
 end
 
-local seen = function(self, x)
-  return not not rawget(self.payload, x)
-end
-
 --- METHODS
 
 local has = function(self, x)
-  return seen(self, x) and not next(self.payload[x])
+  local p = rawget(self.payload, x)
+  return not not (p and not next(p))
 end
 
 local value = function(self)
@@ -50,7 +52,7 @@ end
 local merge = function(self, other)
   -- apply changes observed by distant node
   for k,v in pairs(other.payload) do
-    if not seen(self, k) then
+    if not rawget(self.payload, k) then
       self.payload[k] = {}
     end
     for node,uid in pairs(v) do

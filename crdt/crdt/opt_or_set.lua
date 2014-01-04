@@ -3,6 +3,8 @@
 -- See paper: An Optimized Conflict-free Replicated Set
 -- Bienius, Zawirski, Preguiça, Shapiro, Baquero, Balegas & Duarte
 -- http://arxiv.org/pdf/1210.3368.pdf
+--
+-- Worst-case space complexity is O( nodes * (elements + 1) ).
 
 local LSet = require "lua_set"
 local utils = require "utils"
