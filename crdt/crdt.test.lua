@@ -132,6 +132,8 @@ local test_or_set_aw = function(name, class)
 
     T:seq2(sa, {"a"})
     T:seq2(sc, {"a"})
+    T:yes(sc:has("a"))
+    T:no(sc:has("b"))
 
   end; T:done()
 end
@@ -204,6 +206,8 @@ T:start("Optimized OR-Set - Remove Wins"); do
     sa:add("a")
     sc:merge(sb)
     sc:merge(sa)
+    T:yes(sc:has("a"))
+    T:no(sc:has("b"))
     sa:del("a")
     sa:merge(sb)
     sc:merge(sa)

@@ -17,7 +17,7 @@ end
 
 local has = function(self, x)
   local p = rawget(self.payload, x)
-  return not not (x and next(x))
+  return not not (p and next(p))
 end
 
 local value = function(self)

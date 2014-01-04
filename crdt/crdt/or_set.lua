@@ -8,7 +8,7 @@ local utils = require "utils"
 
 local has = function(self, x)
   local v = self.e[x]
-  return v and (v:card() > 0)
+  return v and (v.c:card() > 0)
 end
 
 local value = function(self)
