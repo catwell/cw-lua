@@ -1,6 +1,5 @@
-package.path = package.path .. ";./src/?.lua"
-
 local cwtest = require "cwtest"
+package.path = package.path .. ";./crdt/?.lua"
 local GCounter = require "g_counter"
 local PNCounter = require "pn_counter"
 local GSet = require "g_set"
