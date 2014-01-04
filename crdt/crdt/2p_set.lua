@@ -1,8 +1,19 @@
 -- 2P-Set
 
 local GSet = require "g_set"
+local utils = require "utils"
 
 --- METHODS
+
+local has = function(self, x)
+  return self.a:has(x) and not self.r:has(x)
+end
+
+local value = function(self)
+  local r = self.a:value():copy()
+  r:s_del(self.r:value())
+  return r
+end
 
 local add = function(self, x)
   if self.r:has(x) then error("invalid") end
@@ -20,17 +31,12 @@ local merge = function(self, other)
   self.r:merge(other.r)
 end
 
-local value = function(self)
-  local r = self.a:value():copy()
-  r:s_del(self.r:value())
-  return r
-end
-
 local methods = {
-  add = add, -- (x) -> !
-  del = del, -- (x) -> !
-  merge = merge, -- (other) -> !
+  has = utils.variadify(has, utils.fold_and), -- (x) -> bool
   value = value, -- () -> LSet
+  add = utils.variadify(add), -- (x) -> !
+  del = utils.variadify(del), -- (x) -> !
+  merge = merge, -- (other) -> !
 }
 
 --- CLASS

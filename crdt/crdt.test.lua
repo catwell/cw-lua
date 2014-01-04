@@ -69,14 +69,11 @@ end; T:done()
 T:start("G-Set"); do
 
   local sa = GSet.new()
-  sa:add(6)
-  sa:add(9)
+  sa:add(6,9)
   T:seq2(sa, {6,9})
 
   local sb = GSet.new()
-  sb:add(6)
-  sb:add(2)
-  sb:add(4)
+  sb:add(6,2,4)
   T:seq2(sb, {2,4,6})
 
   sb:merge(sa)
@@ -95,8 +92,7 @@ T:start("2P-Set"); do
 
   local sa = TwoPSet.new()
   local sb = TwoPSet.new()
-  sa:add("a")
-  sa:add("b")
+  sa:add("a","b")
   sa:del("a")
   sb:add("c")
   sb:merge(sa)

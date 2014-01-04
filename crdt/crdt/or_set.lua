@@ -6,6 +6,21 @@ local utils = require "utils"
 
 --- METHODS
 
+local has = function(self, x)
+  local v = self.e[x]
+  return v and (v:card() > 0)
+end
+
+local value = function(self)
+  local r = LSet.new()
+  for k,v in pairs(self.e) do
+    if v.c:card() > 0 then
+      r:add(k)
+    end
+  end
+  return r
+end
+
 local add = function(self, x)
   local uid = utils.mkuid()
   self.e[x].c:add(uid)
@@ -37,21 +52,12 @@ local merge = function(self, other)
   end
 end
 
-local value = function(self)
-  local r = LSet.new()
-  for k,v in pairs(self.e) do
-    if v.c:card() > 0 then
-      r:add(k)
-    end
-  end
-  return r
-end
-
 local methods = {
-  add = add, -- (x) -> !
-  del = del, -- (x) -> !
-  merge = merge, -- (other) -> !
+  has = utils.variadify(has, utils.fold_and), -- (x) -> bool
   value = value, -- () -> LSet
+  add = utils.variadify(add), -- (x) -> !
+  del = utils.variadify(del), -- (x) -> !
+  merge = merge, -- (other) -> !
 }
 
 --- CLASS

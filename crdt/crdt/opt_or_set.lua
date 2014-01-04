@@ -60,10 +60,10 @@ local merge = function(self, other)
 end
 
 local methods = {
-  has = has, -- (x) -> bool
+  has = utils.variadify(has, utils.fold_and), -- (x) -> bool
   value = value, -- () -> LSet
-  add = add, -- (x) -> !
-  del = del, -- (x) -> !
+  add = utils.variadify(add), -- (x) -> !
+  del = utils.variadify(del), -- (x) -> !
   merge = merge, -- (other) -> !
 }
 
