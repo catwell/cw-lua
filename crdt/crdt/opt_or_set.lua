@@ -1,4 +1,5 @@
--- Optimized OR-Set
+-- Optimized OR-Set (Add Wins)
+--
 -- See paper: An Optimized Conflict-free Replicated Set
 -- Bienius, Zawirski, Preguiça, Shapiro, Baquero, Balegas & Duarte
 -- http://arxiv.org/pdf/1210.3368.pdf
@@ -15,7 +16,8 @@ end
 --- METHODS
 
 local has = function(self, x)
-  return not not next(self.payload[x])
+  local p = rawget(self.payload, x)
+  return not not (x and next(x))
 end
 
 local value = function(self)
@@ -43,7 +45,7 @@ local merge = function(self, other)
       end
     end
   end
-  -- collect garbage, make distant removes effective
+  -- make distant removes effective and collect garbage
   for k,v in pairs(self.payload) do
     for node,uid in pairs(v) do
       if other.ids[node] >= uid then
@@ -52,6 +54,7 @@ local merge = function(self, other)
         v[node] = other.payload[k][node]
       end
     end
+    if not next(v) then v[k] = nil end
   end
   -- merge replica ids
   for k,v in pairs(other.ids) do
@@ -82,5 +85,5 @@ local new = function(node)
 end
 
 return {
-  new = new, -- (node) -> Optimized  OR-Set
+  new = new, -- (node) -> Optimized OR-Set (Add Wins)
 }
