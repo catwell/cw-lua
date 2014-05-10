@@ -18,6 +18,7 @@ some of them.
 - crdt: implementation of some Conflict-Free Replicated Data Types in Lua.
 - deque: simple deque implementation (similar to the lists used in fakeredis).
 - bimap: mirrored map implementation.
+- nsqc: a [NSQ](http://nsq.io) client.
 
 ## Unmaintained
 
@@ -28,7 +29,7 @@ I am unlikely to work again on any of those projects.
 - lua-pipe: syntax experiment, Lua version of Pipe in Python.
 - lua-zerorpc: [ZeroRPC](http://zerorpc.dotcloud.com/) implementation.
 
-## Graduated:
+## Graduated
 
 - [fakeredis](https://github.com/catwell/fakeredis): a Redis mock
 (same interface as redis-lua).
