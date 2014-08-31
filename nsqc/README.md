@@ -4,7 +4,10 @@
 
 nsqc (pronounce "[Nesquik](http://northdallasgazette.com/wordpress/wp-content/uploads/2012/11/2f561c70a67f88377c3abbf041edbc72.jpg)") is a [NSQ](http://nsq.io/) client for Lua.
 
-*NOTE:* This is very basic, only supports reading and does not support nsqlookupd. *You probably do not want to use this.* I may or may not improve it later. If you need a real NSQ client for Lua, get in touch.
+*NOTE:* This is very basic, only supports reading and does not support nsqlookupd.
+
+*You probably do not want to use this.* It was only an experiment and
+I will probably not work on it anymore.
 
 ## Usage example
 
