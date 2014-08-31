@@ -7,6 +7,13 @@ that do not deserve their own repository.
 These are mostly unmaintained prototypes and ideas I gave up on.
 Projects I become more serious about graduate to their own repositories.
 
+## Early stage
+
+I just started those. They are just experiments for now,
+although some may become real projects someday.
+
+- iris: an [Iris](http://iris.karalabe.com/) client.
+
 ## Maintained (somewhat)
 
 If you send me a bug report on one of those projects,
