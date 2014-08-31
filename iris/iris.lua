@@ -211,6 +211,15 @@ local request = function(self, cluster, body, timeout_ms)
     return self:receive_reply(outgoing_id)
 end
 
+local broadcast = function(self, cluster, body)
+    self:send{
+        t_byte(OP.BROADCAST),
+        t_string(cluster),
+        t_binary(body),
+    }
+    return true
+end
+
 local process_request = function(self)
     local id = self:receive_varint()
     local body = self:receive_binary()
@@ -229,8 +238,17 @@ local process_request = function(self)
     return true
 end
 
+local process_broadcast = function(self)
+    local body = self:receive_binary()
+    if not self.handlers.broadcast then
+        bail("got broadcast but no handler set")
+    end
+    return self.handlers.broadcast(body)
+end
+
 local ll_handlers = {
     [OP.REQUEST] = process_request,
+    [OP.BROADCAST] = process_broadcast,
 }
 
 local process_one = function(self)
@@ -256,10 +274,12 @@ local methods = {
     send_request = send_request,
     receive_reply = receive_reply,
     request = request,
+    broadcast = broadcast,
     process_one = process_one,
 }
 
 local new = function(port)
+    port = port or 55555
     local self = setmetatable({}, {__index = methods})
     self:connect(port)
     self.req_ctr = 0
