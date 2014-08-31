@@ -108,7 +108,7 @@ end
 local receive_varint = function(self)
     local r, m = 0, 1
     while true do
-        b = self:receive_byte()
+        local b = self:receive_byte()
         if b < 128 then
             return b * m + r
         else
@@ -134,7 +134,7 @@ local handshake = function(self, cluster)
         t_byte(OP.INIT),
         t_string(CLIENT_MAGIC),
         t_string(PROTO_VERSION),
-        t_string(cluster)
+        t_string(cluster),
     }
     local b = self:receive_byte()
     if b == OP.INIT then
@@ -169,15 +169,19 @@ local new_req_id = function(self)
     return self.req_ctr
 end
 
-local request = function(self, cluster, body, timeout_ms)
-    local outgoing_id = self:new_req_id()
+local send_request = function(self, cluster, body, timeout_ms)
+    local id = self:new_req_id()
     self:send{
         t_byte(OP.REQUEST),
-        t_varint(outgoing_id),
+        t_varint(id),
         t_string(cluster),
         t_binary(body),
-        t_varint(timeout_ms)
+        t_varint(timeout_ms),
     }
+    return id
+end
+
+local receive_reply = function(self, outgoing_id)
     local b = self:receive_byte()
     if b == OP.REPLY then
         local incoming_id = self:receive_varint()
@@ -202,6 +206,11 @@ local request = function(self, cluster, body, timeout_ms)
     end
 end
 
+local request = function(self, cluster, body, timeout_ms)
+    local outgoing_id = self:send_request(cluster, body, timeout_ms)
+    return self:receive_reply(outgoing_id)
+end
+
 local process_request = function(self)
     local id = self:receive_varint()
     local body = self:receive_binary()
@@ -215,8 +224,9 @@ local process_request = function(self)
         t_byte(OP.REPLY),
         t_varint(id),
         t_bool(reply),
-        reply and t_binary(reply) or t_string(err or "(error)")
+        reply and t_binary(reply) or t_string(err or "(error)"),
     }
+    return true
 end
 
 local ll_handlers = {
@@ -226,7 +236,7 @@ local ll_handlers = {
 local process_one = function(self)
     local b = self:receive_byte()
     if ll_handlers[b] then
-        ll_handlers[b](self)
+        return ll_handlers[b](self)
     else
         unexpected_opcode(b)
     end
@@ -243,6 +253,8 @@ local methods = {
     handshake = handshake,
     teardown = teardown,
     new_req_id = new_req_id,
+    send_request = send_request,
+    receive_reply = receive_reply,
     request = request,
     process_one = process_one,
 }

@@ -1,6 +1,6 @@
 local iris = require "iris"
 
-c = iris.new(55555)
+local c = iris.new(55555)
 assert(c:handshake(""))
 
 local r = assert(c:request("echo", "hello", 1000))
