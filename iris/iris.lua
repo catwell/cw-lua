@@ -220,6 +220,28 @@ local broadcast = function(self, cluster, body)
     return true
 end
 
+local publish = function(self, topic, body)
+    self:send{
+        t_byte(OP.PUBLISH),
+        t_string(topic),
+        t_binary(body),
+    }
+end
+
+local subscribe = function(self, topic, handler)
+    self:send{
+        t_byte(OP.SUBSCRIBE),
+        t_string(topic),
+    }
+end
+
+local unsubscribe = function(self, topic)
+    self:send{
+        t_byte(OP.UNSUBSCRIBE),
+        t_string(topic),
+    }
+end
+
 local process_request = function(self)
     local id = self:receive_varint()
     local body = self:receive_binary()
@@ -246,9 +268,20 @@ local process_broadcast = function(self)
     return self.handlers.broadcast(body)
 end
 
+local process_publish = function(self)
+    local topic = self:receive_string()
+    local body = self:receive_binary()
+    if self.handlers.pubsub[topic] then
+        return self.handlers.pubsub[topic](body)
+    else
+        return nil, fmt("no handler for topic %s)", topic)
+    end
+end
+
 local ll_handlers = {
     [OP.REQUEST] = process_request,
     [OP.BROADCAST] = process_broadcast,
+    [OP.PUBLISH] = process_publish,
 }
 
 local process_one = function(self)
@@ -275,6 +308,9 @@ local methods = {
     receive_reply = receive_reply,
     request = request,
     broadcast = broadcast,
+    publish = publish,
+    subscribe = subscribe,
+    unsubscribe = unsubscribe,
     process_one = process_one,
 }
 
@@ -283,7 +319,7 @@ local new = function(port)
     local self = setmetatable({}, {__index = methods})
     self:connect(port)
     self.req_ctr = 0
-    self.handlers = {}
+    self.handlers = {pubsub = {}}
     return self
 end
 
