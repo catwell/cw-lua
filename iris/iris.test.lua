@@ -15,11 +15,11 @@ T:start("request/reply"); do
     T:yes( client:handshake("") )
     T:yes( server:handshake("echo") )
 
-    local id = client:send_request("echo", "hello", 1000)
+    local req = client:request("echo", "hello", 1000)
 
     T:yes( server:process_one() )
 
-    T:eq( client:receive_reply(id), "hello" )
+    T:eq( req:receive_reply(), "hello" )
 
     server:teardown()
     client:teardown()

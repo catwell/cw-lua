@@ -169,46 +169,57 @@ local new_req_id = function(self)
     return self.req_ctr
 end
 
-local send_request = function(self, cluster, body, timeout_ms)
-    local id = self:new_req_id()
-    self:send{
+--- request ---
+
+local req_send = function(self, cluster, body, timeout_ms)
+    self.client:send{
         t_byte(OP.REQUEST),
-        t_varint(id),
+        t_varint(self.id),
         t_string(cluster),
         t_binary(body),
         t_varint(timeout_ms),
     }
-    return id
 end
 
-local receive_reply = function(self, outgoing_id)
-    local b = self:receive_byte()
-    if b == OP.REPLY then
-        local incoming_id = self:receive_varint()
-        if incoming_id == outgoing_id then
-            local timeout = self:receive_bool()
-            if timeout then
-                return nil, "timeout"
-            else
-                local success = self:receive_bool()
-                if success then
-                    return self:receive_binary()
-                else
-                    return nil, self:receive_string()
-                end
-            end
-        else
-            bail("unexpected request ID %d", incoming_id)
-        end
-    else
+local req_receive_reply = function(self)
+    local b = self.client:receive_byte()
+    if b ~= OP.REPLY then
         -- TODO keep processing
         unexpected_opcode(b)
     end
+    local id = self.client:receive_varint()
+    if id ~= self.id then
+        bail("unexpected request ID %d", id)
+    end
+    local timeout = self.client:receive_bool()
+    if timeout then
+        return nil, "timeout"
+    else
+        local success = self.client:receive_bool()
+        if success then
+            return self.client:receive_binary()
+        else
+            return nil, self.client:receive_string()
+        end
+    end
 end
 
-local request = function(self, cluster, body, timeout_ms)
-    local outgoing_id = self:send_request(cluster, body, timeout_ms)
-    return self:receive_reply(outgoing_id)
+local req_methods = {
+    send = req_send,
+    receive_reply = req_receive_reply,
+}
+
+local new_request = function(client)
+    local self = setmetatable({}, {__index = req_methods})
+    self.client = client
+    self.id = client:new_req_id()
+    return self
+end
+
+local new_request_send = function(client, cluster, body, timeout_ms)
+    local req = new_request(client)
+    req:send(cluster, body, timeout_ms)
+    return req
 end
 
 local broadcast = function(self, cluster, body)
@@ -304,9 +315,7 @@ local methods = {
     handshake = handshake,
     teardown = teardown,
     new_req_id = new_req_id,
-    send_request = send_request,
-    receive_reply = receive_reply,
-    request = request,
+    request = new_request_send,
     broadcast = broadcast,
     publish = publish,
     subscribe = subscribe,
