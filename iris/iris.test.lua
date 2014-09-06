@@ -86,3 +86,26 @@ T:start("publish/subscribe"); do
     server2:teardown()
     client:teardown()
 end; T:done()
+
+T:start("tunnel"); do
+    local client = iris.new()
+    local server = iris.new()
+
+    T:yes( client:handshake("") )
+    T:yes( server:handshake("tunnel") )
+
+    local tun = client:tunnel("tunnel", 1000)
+
+    T:yes( server:process_one() )
+
+    T:yes( tun:confirm() )
+
+    T:yes( server:process_one() )
+
+    T:yes( tun:close() )
+
+    T:yes( server:process_one() )
+
+    server:teardown()
+    client:teardown()
+end; T:done()
