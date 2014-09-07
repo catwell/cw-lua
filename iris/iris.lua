@@ -79,6 +79,18 @@ end
 
 local t_string = t_binary
 
+local make_chunks = function(s, sz)
+    local r = {}
+    for i=1,#s,sz do
+        r[#r+1] = s:sub(i,i+sz-1)
+    end
+    return r
+end
+
+local now_ms = function()
+    return socket.gettime() * 1000
+end
+
 local connect = function(self, port)
   self.cnx = socket.tcp()
   self.cnx:connect("localhost", port)
@@ -271,6 +283,32 @@ local tun_close = function(self)
      }
 end
 
+local tun_allow = function(self, n)
+    self.client:send{
+        t_byte(OP.TUN_ALLOW),
+        t_varint(self.id),
+        t_varint(n),
+     }
+end
+
+local tun_send_transfer = function(self, size, body)
+    self.client:send{
+        t_byte(OP.TUN_TRANSFER),
+        t_varint(self.id),
+        t_varint(size),
+        t_binary(body)
+    }
+end
+
+local tun_drain = function(self, sz)
+    if self.allowance >= sz then
+        self.allowance = self.allowance - sz
+        return true
+    else
+        return false
+    end
+end
+
 local ctun_send_init = function(self, cluster, timeout_ms)
     self.client:send{
         t_byte(OP.TUN_INIT),
@@ -280,15 +318,48 @@ local ctun_send_init = function(self, cluster, timeout_ms)
     }
 end
 
+local ctun_process_allow = function(self)
+    ensure_receive(self, OP.TUN_ALLOW)
+    local allowance = self.client:receive_varint()
+    self.allowance = self.allowance + allowance
+    return true
+end
+
 local ctun_confirm = function(self)
     ensure_receive(self, OP.TUN_CONFIRM)
     local timeout = self.client:receive_bool()
     if timeout then return nil, "timeout" end
     self.chunksize = self.client:receive_varint()
-    ensure_receive(self, OP.TUN_ALLOW)
-    local allowance = self.client:receive_varint()
-    self.allowance = self.allowance + allowance
-    return true
+    return ctun_process_allow(self)
+end
+
+local xfer_run = function(self)
+    for i=self.sent+1,#self.chunks do
+        if tun_drain(self.tunnel, #self.chunks[i]) then
+            tun_send_transfer(
+                self.tunnel,
+                (i == 1 and self.size or 0),
+                self.chunks[i]
+            )
+            self.sent = i
+        else
+            return nil, "not enough allowance"
+        end
+    end
+    return ctun_process_allow(self.tunnel)
+end
+
+local xfer_methods = {run = xfer_run}
+
+local xfer_new = function(tunnel, body)
+    local size = #body
+    assert(size > 0)
+    local self = setmetatable({}, {__index = xfer_methods})
+    self.tunnel = tunnel
+    self.size = size
+    self.chunks = make_chunks(body, tunnel.chunksize)
+    self.sent = 0
+    return self
 end
 
 local ctun_close = function(self)
@@ -301,6 +372,8 @@ end
 local ctun_methods = {
     init = ctun_send_init,
     confirm = ctun_confirm,
+    allow = tun_allow,
+    transfer = xfer_new,
     close = ctun_close,
 }
 
@@ -340,11 +413,32 @@ local stun_unregister = function(self)
     self.client.tunnels[self.id] = nil
 end
 
+local stun_update_transfer = function(self, size, body)
+    if size then
+        self.xfer = {
+            total_size = size,
+            cur_size = 0,
+            chunks = {},
+        }
+    end
+    self.xfer.cur_size = self.xfer.cur_size + #body
+    self.xfer.chunks[#self.xfer.chunks+1] = body
+    if self.xfer.cur_size > self.xfer.total_size then
+        error("invalid transfer!")
+    elseif self.cur_size == self.total_size then
+        return table.concat(self.xfer.chunks)
+    else
+        return nil
+    end
+end
+
 local stun_methods = {
     init = stun_init,
     confirm = stun_confirm,
+    allow = tun_allow,
     register = stun_register,
     unregister = stun_unregister,
+    update_transfer = stun_update_transfer,
     close = tun_close,
 }
 
@@ -352,6 +446,7 @@ local new_server_tunnel = function(client)
     local self = setmetatable({}, {__index = stun_methods})
     self.client = client
     self.allowance = 0
+    self.handlers = {}
     return self
 end
 
@@ -398,6 +493,10 @@ local process_tun_init = function(self)
     tun:init()
     tun:register()
     tun:confirm()
+    if not self.handlers.tunnel then
+        bail("got tunnel but no handler set")
+    end
+    self.handlers.tunnel(tun)
     return true
 end
 
@@ -419,6 +518,19 @@ local process_tun_allow = function(self, tun)
     return true
 end
 
+local process_tun_transfer = function(self, tun)
+    local size = self:receive_varint()
+    local data = self:receive_binary()
+    local r = tun:update_transfer(size, data)
+    if r then
+        if not tun.handlers.message then
+            bail("got message but no handler set")
+        end
+        tun:allow(#r)
+        return tun.handlers.message(r)
+    end
+end
+
 local process_tun_close = function(self, tun)
     local reason = self:receive_string() -- TODO
     tun:unregister()
@@ -431,13 +543,14 @@ local ll_handlers = {
     [OP.PUBLISH] = process_publish,
     [OP.TUN_INIT] = process_tun_init,
     [OP.TUN_ALLOW] = _with_tun(process_tun_allow),
+    [OP.TUN_TRANSFER] = _with_tun(process_tun_transfer),
     [OP.TUN_CLOSE] = _with_tun(process_tun_close),
 }
 
 local process_one = function(self)
     local b = self:receive_byte()
     if ll_handlers[b] then
-        return ll_handlers[b](self)
+        return {b, ll_handlers[b](self)}
     else
         unexpected_opcode(b)
     end

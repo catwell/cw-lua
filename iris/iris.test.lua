@@ -2,6 +2,7 @@ local cwtest = require "cwtest"
 local iris = require "iris"
 local socket = require "socket"
 
+local OP = iris.OP
 local T = cwtest.new()
 
 local echo = function(req) return req end
@@ -17,7 +18,7 @@ T:start("request/reply"); do
 
     local req = client:request("echo", "hello", 1000)
 
-    T:yes( server:process_one() )
+    T:eq( server:process_one(), {OP.REQUEST, true} )
 
     T:eq( req:receive_reply(), "hello" )
 
@@ -39,8 +40,8 @@ T:start("broadcast"); do
 
     T:yes( client:broadcast("bcst", "hello") )
 
-    T:eq( server1:process_one(), "hello" )
-    T:eq( server2:process_one(), "hello" )
+    T:eq( server1:process_one(), {OP.BROADCAST, "hello"} )
+    T:eq( server2:process_one(), {OP.BROADCAST, "hello"} )
 
     server1:teardown()
     server2:teardown()
@@ -68,8 +69,8 @@ T:start("publish/subscribe"); do
 
     client:publish("topic1", "hello")
 
-    T:eq( server1:process_one(), "hello" )
-    T:eq( server2:process_one(), "hello" )
+    T:eq( server1:process_one(), {OP.PUBLISH, "hello"} )
+    T:eq( server2:process_one(), {OP.PUBLISH, "hello"} )
 
     server2:unsubscribe("topic1")
     server2:subscribe("topic2")
@@ -79,8 +80,8 @@ T:start("publish/subscribe"); do
     client:publish("topic1", "1")
     client:publish("topic2", "2")
 
-    T:eq( server1:process_one(), "1" )
-    T:eq( server2:process_one(), "2" )
+    T:eq( server1:process_one(), {OP.PUBLISH, "1"} )
+    T:eq( server2:process_one(), {OP.PUBLISH, "2"} )
 
     server1:teardown()
     server2:teardown()
@@ -91,16 +92,27 @@ T:start("tunnel"); do
     local client = iris.new()
     local server = iris.new()
 
+    server.handlers.tunnel = function(tun)
+        tun:allow(1024)
+        tun.handlers.message = echo
+    end
+
     T:yes( client:handshake("") )
     T:yes( server:handshake("tunnel") )
 
     local tun = client:tunnel("tunnel", 1000)
 
-    T:yes( server:process_one() )
+    T:eq( server:process_one(), {OP.TUN_INIT, true} )
 
     T:yes( tun:confirm() )
+    tun:allow(1024)
 
-    T:yes( server:process_one() )
+    T:eq( server:process_one(), {OP.TUN_ALLOW, true} )
+
+    local xfer = tun:transfer("data")
+    T:yes( xfer:run() )
+
+    T:eq( server:process_one(), {OP.TUN_TRANSFER, "data"} )
 
     T:yes( tun:close() )
 
