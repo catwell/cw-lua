@@ -92,9 +92,20 @@ T:start("tunnel"); do
     local client = iris.new()
     local server = iris.new()
 
+    local responses = {
+        "response 1", "response 2", "response 3"
+    }
+
+    local M = {}
     server.handlers.tunnel = function(tun)
         tun:allow(1024)
-        tun.handlers.message = echo
+        tun.handlers.message = function(msg)
+            M.msg = msg
+            for i=1,#responses do
+                local xfer = tun:transfer(responses[i])
+                while not xfer:run() do coroutine.yield() end
+            end
+        end
     end
 
     T:yes( client:handshake("") )
@@ -111,8 +122,15 @@ T:start("tunnel"); do
 
     local xfer = tun:transfer("data")
     T:yes( xfer:run() )
+    T:yes( tun:process_allow() )
 
-    T:eq( {server:process_one()}, {OP.TUN_TRANSFER, "data"} )
+    T:eq( {server:process_one()}, {OP.TUN_TRANSFER, true} )
+    T:eq( M.msg, "data" )
+
+    for i=1,#responses do
+        T:eq( tun:process_transfer(), responses[i] )
+        T:eq( {server:process_one()}, {OP.TUN_ALLOW, true} )
+    end
 
     T:eq( {server:process_one(0)}, {nil, "timeout"} )
 

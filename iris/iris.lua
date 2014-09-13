@@ -309,6 +309,75 @@ local tun_drain = function(self, sz)
     end
 end
 
+local xfer_run = function(self)
+    for i=self.sent+1,#self.chunks do
+        if tun_drain(self.tunnel, #self.chunks[i]) then
+            tun_send_transfer(
+                self.tunnel,
+                (i == 1 and self.size or 0),
+                self.chunks[i]
+            )
+            self.sent = i
+        else
+            return nil, "not enough allowance"
+        end
+    end
+    return true
+end
+
+local xfer_methods = {run = xfer_run}
+
+local xfer_new = function(tunnel, body)
+    local size = #body
+    assert(size > 0)
+    local self = setmetatable({}, {__index = xfer_methods})
+    self.tunnel = tunnel
+    self.size = size
+    self.chunks = make_chunks(body, tunnel.chunksize)
+    self.sent = 0
+    return self
+end
+
+local xfer_in_reset = function(self)
+    self.chunks = {}
+    self.cur_size = 0
+    self.total_size = nil
+end
+
+local xfer_in_update = function(self)
+    local size = self.tunnel.client:receive_varint()
+    local body = self.tunnel.client:receive_binary()
+    if size == 0 then
+        assert(self.total_size)
+    else
+        assert(not self.total_size)
+        self.total_size = size
+    end
+    self.cur_size = self.cur_size + #body
+    self.chunks[#self.chunks+1] = body
+    assert(self.cur_size <= self.total_size)
+    if self.cur_size == self.total_size then
+        local r = table.concat(self.chunks)
+        self.tunnel:allow(#r)
+        self:reset()
+        return r
+    else
+        return nil
+    end
+end
+
+local xfer_in_methods = {
+    update = xfer_in_update,
+    reset = xfer_in_reset,
+}
+
+local xfer_in_new = function(tunnel)
+    local self = setmetatable({}, {__index = xfer_in_methods})
+    self.tunnel = tunnel
+    self:reset()
+    return self
+end
+
 local ctun_send_init = function(self, cluster, timeout_ms)
     self.client:send{
         t_byte(OP.TUN_INIT),
@@ -325,41 +394,17 @@ local ctun_process_allow = function(self)
     return true
 end
 
+local ctun_process_transfer = function(self)
+    ensure_receive(self, OP.TUN_TRANSFER)
+    return self.xfer_in:update()
+end
+
 local ctun_confirm = function(self)
     ensure_receive(self, OP.TUN_CONFIRM)
     local timeout = self.client:receive_bool()
     if timeout then return nil, "timeout" end
     self.chunksize = self.client:receive_varint()
     return ctun_process_allow(self)
-end
-
-local xfer_run = function(self)
-    for i=self.sent+1,#self.chunks do
-        if tun_drain(self.tunnel, #self.chunks[i]) then
-            tun_send_transfer(
-                self.tunnel,
-                (i == 1 and self.size or 0),
-                self.chunks[i]
-            )
-            self.sent = i
-        else
-            return nil, "not enough allowance"
-        end
-    end
-    return ctun_process_allow(self.tunnel)
-end
-
-local xfer_methods = {run = xfer_run}
-
-local xfer_new = function(tunnel, body)
-    local size = #body
-    assert(size > 0)
-    local self = setmetatable({}, {__index = xfer_methods})
-    self.tunnel = tunnel
-    self.size = size
-    self.chunks = make_chunks(body, tunnel.chunksize)
-    self.sent = 0
-    return self
 end
 
 local ctun_close = function(self)
@@ -373,6 +418,8 @@ local ctun_methods = {
     init = ctun_send_init,
     confirm = ctun_confirm,
     allow = tun_allow,
+    process_allow = ctun_process_allow,
+    process_transfer = ctun_process_transfer,
     transfer = xfer_new,
     close = ctun_close,
 }
@@ -382,6 +429,7 @@ local new_client_tunnel = function(client)
     self.client = client
     self.allowance = 0
     self.id = client:new_tun_id()
+    self.xfer_in = xfer_in_new(self)
     return self
 end
 
@@ -413,32 +461,13 @@ local stun_unregister = function(self)
     self.client.tunnels[self.id] = nil
 end
 
-local stun_update_transfer = function(self, size, body)
-    if size then
-        self.xfer = {
-            total_size = size,
-            cur_size = 0,
-            chunks = {},
-        }
-    end
-    self.xfer.cur_size = self.xfer.cur_size + #body
-    self.xfer.chunks[#self.xfer.chunks+1] = body
-    if self.xfer.cur_size > self.xfer.total_size then
-        error("invalid transfer!")
-    elseif self.cur_size == self.total_size then
-        return table.concat(self.xfer.chunks)
-    else
-        return nil
-    end
-end
-
 local stun_methods = {
     init = stun_init,
     confirm = stun_confirm,
     allow = tun_allow,
     register = stun_register,
     unregister = stun_unregister,
-    update_transfer = stun_update_transfer,
+    transfer = xfer_new,
     close = tun_close,
 }
 
@@ -447,6 +476,8 @@ local new_server_tunnel = function(client)
     self.client = client
     self.allowance = 0
     self.handlers = {}
+    self.starved = {}
+    self.xfer_in = xfer_in_new(self)
     return self
 end
 
@@ -512,22 +543,34 @@ local _with_tun = function(f)
     end
 end
 
+local _unstarve = function(tun)
+    while #tun.starved > 0 do
+        if coroutine.status(tun.starved[1]) == "dead" then
+            table.remove(tun.starved, 1)
+        else
+            coroutine.resume(co)
+        end
+    end
+end
+
 local process_tun_allow = function(self, tun)
     local allowance = self:receive_varint()
     tun.allowance = tun.allowance + allowance
+    _unstarve(tun)
     return true
 end
 
 local process_tun_transfer = function(self, tun)
-    local size = self:receive_varint()
-    local data = self:receive_binary()
-    local r = tun:update_transfer(size, data)
+    local r = tun.xfer_in:update()
     if r then
         if not tun.handlers.message then
             bail("got message but no handler set")
         end
-        tun:allow(#r)
-        return tun.handlers.message(r)
+        local co = coroutine.create(tun.handlers.message)
+        assert(coroutine.resume(co, r))
+        tun.starved[#tun.starved+1] = co
+        _unstarve(tun)
+        return true
     end
 end
 
