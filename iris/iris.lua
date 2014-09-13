@@ -547,13 +547,14 @@ local ll_handlers = {
     [OP.TUN_CLOSE] = _with_tun(process_tun_close),
 }
 
-local process_one = function(self)
-    local b = self:receive_byte()
-    if ll_handlers[b] then
-        return {b, ll_handlers[b](self)}
-    else
-        unexpected_opcode(b)
-    end
+local process_one = function(self, timeout)
+    if timeout then self.cnx:settimeout(timeout) end
+    local b, e = self.cnx:receive(1)
+    if timeout then self.cnx:settimeout(nil) end
+    if not b then return nil, e end
+    b = b:byte()
+    if not ll_handlers[b] then unexpected_opcode(b) end
+    return b, ll_handlers[b](self)
 end
 
 local methods = {

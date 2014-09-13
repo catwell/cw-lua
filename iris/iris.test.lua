@@ -18,7 +18,7 @@ T:start("request/reply"); do
 
     local req = client:request("echo", "hello", 1000)
 
-    T:eq( server:process_one(), {OP.REQUEST, true} )
+    T:eq( {server:process_one()}, {OP.REQUEST, true} )
 
     T:eq( req:receive_reply(), "hello" )
 
@@ -40,8 +40,8 @@ T:start("broadcast"); do
 
     T:yes( client:broadcast("bcst", "hello") )
 
-    T:eq( server1:process_one(), {OP.BROADCAST, "hello"} )
-    T:eq( server2:process_one(), {OP.BROADCAST, "hello"} )
+    T:eq( {server1:process_one()}, {OP.BROADCAST, "hello"} )
+    T:eq( {server2:process_one()}, {OP.BROADCAST, "hello"} )
 
     server1:teardown()
     server2:teardown()
@@ -69,8 +69,8 @@ T:start("publish/subscribe"); do
 
     client:publish("topic1", "hello")
 
-    T:eq( server1:process_one(), {OP.PUBLISH, "hello"} )
-    T:eq( server2:process_one(), {OP.PUBLISH, "hello"} )
+    T:eq( {server1:process_one()}, {OP.PUBLISH, "hello"} )
+    T:eq( {server2:process_one()}, {OP.PUBLISH, "hello"} )
 
     server2:unsubscribe("topic1")
     server2:subscribe("topic2")
@@ -80,8 +80,8 @@ T:start("publish/subscribe"); do
     client:publish("topic1", "1")
     client:publish("topic2", "2")
 
-    T:eq( server1:process_one(), {OP.PUBLISH, "1"} )
-    T:eq( server2:process_one(), {OP.PUBLISH, "2"} )
+    T:eq( {server1:process_one()}, {OP.PUBLISH, "1"} )
+    T:eq( {server2:process_one()}, {OP.PUBLISH, "2"} )
 
     server1:teardown()
     server2:teardown()
@@ -102,21 +102,22 @@ T:start("tunnel"); do
 
     local tun = client:tunnel("tunnel", 1000)
 
-    T:eq( server:process_one(), {OP.TUN_INIT, true} )
+    T:eq( {server:process_one()}, {OP.TUN_INIT, true} )
 
     T:yes( tun:confirm() )
     tun:allow(1024)
 
-    T:eq( server:process_one(), {OP.TUN_ALLOW, true} )
+    T:eq( {server:process_one()}, {OP.TUN_ALLOW, true} )
 
     local xfer = tun:transfer("data")
     T:yes( xfer:run() )
 
-    T:eq( server:process_one(), {OP.TUN_TRANSFER, "data"} )
+    T:eq( {server:process_one()}, {OP.TUN_TRANSFER, "data"} )
+
+    T:eq( {server:process_one(0)}, {nil, "timeout"} )
 
     T:yes( tun:close() )
-
-    T:yes( server:process_one() )
+    T:eq( {server:process_one()}, {OP.TUN_CLOSE, true} )
 
     server:teardown()
     client:teardown()
