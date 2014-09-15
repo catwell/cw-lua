@@ -135,7 +135,9 @@ local receive_binary = function(self)
     if sz == 0 then
         return ""
     else
-        return assert(self.cnx:receive(sz))
+        -- drop extra return values
+        local r = assert(self.cnx:receive(sz))
+        return r
     end
 end
 
@@ -164,16 +166,24 @@ local handshake = function(self, cluster)
     end
 end
 
-local teardown = function(self)
+local close = function(self)
     self:send{t_byte(OP.CLOSE)}
-    local b = self:receive_byte()
-    if b == OP.CLOSE then
-        local reason = self:receive_string()
-        assert(reason == "")
-    else
-        -- TODO keep processing
-        unexpected_opcode(b)
+end
+
+local teardown = function(self)
+    self:close()
+    local b
+    while true do
+        b = self:receive_byte()
+        if b == OP.CLOSE then
+            local reason = self:receive_string()
+            assert(reason == "")
+            break
+        else
+            self:process_type(b)
+        end
     end
+    return true
 end
 
 local new_req_id = function(self)
@@ -200,6 +210,14 @@ end
 
 --- request ---
 
+local req_register = function(self)
+    self.client.requests[self.id] = self
+end
+
+local req_unregister = function(self)
+    self.client.requests[self.id] = nil
+end
+
 local req_send = function(self, cluster, body, timeout_ms)
     self.client:send{
         t_byte(OP.REQUEST),
@@ -208,26 +226,36 @@ local req_send = function(self, cluster, body, timeout_ms)
         t_binary(body),
         t_varint(timeout_ms),
     }
+    self._response = {nil, "pending"}
+    self:register()
 end
 
-local req_receive_reply = function(self)
-    ensure_receive(self, OP.REPLY)
+local req_process_reply = function(self)
     local timeout = self.client:receive_bool()
     if timeout then
-        return nil, "timeout"
+        self._response = {nil, "timeout"}
     else
         local success = self.client:receive_bool()
         if success then
-            return self.client:receive_binary()
+            self._response = {self.client:receive_binary()}
         else
-            return nil, self.client:receive_string()
+            self._response = {nil, self.client:receive_string()}
         end
     end
+    self:unregister()
+    return self._response
+end
+
+local req_response = function(self)
+    return table.unpack(self._response)
 end
 
 local req_methods = {
+    register = req_register,
+    unregister = req_unregister,
     send = req_send,
-    receive_reply = req_receive_reply,
+    process_reply = req_process_reply,
+    response = req_response,
 }
 
 local new_request = function(client)
@@ -241,6 +269,18 @@ local new_request_send = function(client, cluster, body, timeout_ms)
     local req = new_request(client)
     req:send(cluster, body, timeout_ms)
     return req
+end
+
+local _with_req = function(f)
+    return function(self)
+        local id = self:receive_varint()
+        local req = self.requests[id]
+        if req then
+            return f(self, req)
+        else
+            return nil, fmt("request %d not found", id)
+        end
+    end
 end
 
 local broadcast = function(self, cluster, body)
@@ -275,6 +315,14 @@ local unsubscribe = function(self, topic)
 end
 
 --- tunnel ---
+
+local tun_register = function(self)
+    self.client.tunnels[self.id] = self
+end
+
+local tun_unregister = function(self)
+    self.client.tunnels[self.id] = nil
+end
 
 local tun_close = function(self)
     self.client:send{
@@ -378,25 +426,33 @@ local xfer_in_new = function(tunnel)
     return self
 end
 
-local ctun_send_init = function(self, cluster, timeout_ms)
+local tun_methods = {
+    register = tun_register,
+    unregister = tun_unregister,
+    allow = tun_allow,
+    transfer = xfer_new,
+    close = tun_close,
+}
+
+local _new_tunnel = function(client, mt)
+    local self = setmetatable({}, {__index = mt})
+    self.client = client
+    self.allowance = 0
+    self.handlers = {}
+    self.starved = {}
+    self.xfer_in = xfer_in_new(self)
+    return self
+end
+
+local ctun_init = function(self, cluster, timeout_ms)
+    self.id = self.client:new_tun_id()
     self.client:send{
         t_byte(OP.TUN_INIT),
         t_varint(self.id),
         t_string(cluster),
         t_varint(timeout_ms),
     }
-end
-
-local ctun_process_allow = function(self)
-    ensure_receive(self, OP.TUN_ALLOW)
-    local allowance = self.client:receive_varint()
-    self.allowance = self.allowance + allowance
-    return true
-end
-
-local ctun_process_transfer = function(self)
-    ensure_receive(self, OP.TUN_TRANSFER)
-    return self.xfer_in:update()
+    self:register()
 end
 
 local ctun_confirm = function(self)
@@ -404,37 +460,22 @@ local ctun_confirm = function(self)
     local timeout = self.client:receive_bool()
     if timeout then return nil, "timeout" end
     self.chunksize = self.client:receive_varint()
-    return ctun_process_allow(self)
+    ensure_receive(self, OP.TUN_ALLOW)
+    local allowance = self.client:receive_varint()
+    self.allowance = self.allowance + allowance
+    return true
 end
 
-local ctun_close = function(self)
-    tun_close(self)
-    ensure_receive(self, OP.TUN_CLOSE)
-    local reason = self.client:receive_string()
-    return reason
-end
+local ctun_methods = setmetatable(
+    {
+        init = ctun_init,
+        confirm = ctun_confirm,
+    },
+    {__index = tun_methods}
+)
 
-local ctun_methods = {
-    init = ctun_send_init,
-    confirm = ctun_confirm,
-    allow = tun_allow,
-    process_allow = ctun_process_allow,
-    process_transfer = ctun_process_transfer,
-    transfer = xfer_new,
-    close = ctun_close,
-}
-
-local new_client_tunnel = function(client)
-    local self = setmetatable({}, {__index = ctun_methods})
-    self.client = client
-    self.allowance = 0
-    self.id = client:new_tun_id()
-    self.xfer_in = xfer_in_new(self)
-    return self
-end
-
-local new_client_tunnel_init = function(client, cluster, timeout_ms)
-    local tun = new_client_tunnel(client)
+local new_client_tunnel = function(client, cluster, timeout_ms)
+    local tun = _new_tunnel(client, ctun_methods)
     tun:init(cluster, timeout_ms)
     return tun
 end
@@ -443,6 +484,7 @@ local stun_init = function(self)
     self.build_id = self.client:receive_varint()
     self.chunksize = self.client:receive_varint()
     self.id = self.client:new_tun_id()
+    self:register()
 end
 
 local stun_confirm = function(self)
@@ -453,32 +495,16 @@ local stun_confirm = function(self)
     }
 end
 
-local stun_register = function(self)
-    self.client.tunnels[self.id] = self
-end
-
-local stun_unregister = function(self)
-    self.client.tunnels[self.id] = nil
-end
-
-local stun_methods = {
-    init = stun_init,
-    confirm = stun_confirm,
-    allow = tun_allow,
-    register = stun_register,
-    unregister = stun_unregister,
-    transfer = xfer_new,
-    close = tun_close,
-}
+local stun_methods = setmetatable(
+    {
+        init = stun_init,
+        confirm = stun_confirm,
+    },
+    {__index = tun_methods}
+)
 
 local new_server_tunnel = function(client)
-    local self = setmetatable({}, {__index = stun_methods})
-    self.client = client
-    self.allowance = 0
-    self.handlers = {}
-    self.starved = {}
-    self.xfer_in = xfer_in_new(self)
-    return self
+    return _new_tunnel(client, stun_methods)
 end
 
 --- handlers ---
@@ -488,47 +514,52 @@ local process_request = function(self)
     local body = self:receive_binary()
     local timeout_ms = self:receive_varint()
     -- TODO discard expired requests
-    if not self.handlers.request then
-        bail("got request but no handler set")
+    if self.handlers.request then
+        local reply, err = self.handlers.request(body)
+        self:send{
+            t_byte(OP.REPLY),
+            t_varint(id),
+            t_bool(reply),
+            reply and t_binary(reply) or t_string(err or "(error)"),
+        }
+        return body, {reply, err}
+    else
+        return body
     end
-    local reply, err = self.handlers.request(body)
-    self:send{
-        t_byte(OP.REPLY),
-        t_varint(id),
-        t_bool(reply),
-        reply and t_binary(reply) or t_string(err or "(error)"),
-    }
-    return true
+end
+
+local process_reply = function(self, req)
+    return req:process_reply()
 end
 
 local process_broadcast = function(self)
     local body = self:receive_binary()
-    if not self.handlers.broadcast then
-        bail("got broadcast but no handler set")
+    if self.handlers.broadcast then
+        return body, self.handlers.broadcast(body)
+    else
+        return body
     end
-    return self.handlers.broadcast(body)
 end
 
 local process_publish = function(self)
     local topic = self:receive_string()
     local body = self:receive_binary()
     if self.handlers.pubsub[topic] then
-        return self.handlers.pubsub[topic](body)
+        return {topic, body}, self.handlers.pubsub[topic](body)
     else
-        return nil, fmt("no handler for topic %s", topic)
+        return {topic, body}
     end
 end
 
 local process_tun_init = function(self)
     local tun = new_server_tunnel(self)
     tun:init()
-    tun:register()
     tun:confirm()
-    if not self.handlers.tunnel then
-        bail("got tunnel but no handler set")
+    if self.handlers.tunnel then
+        return tun.id, self.handlers.tunnel(tun)
+    else
+        return tun.id
     end
-    self.handlers.tunnel(tun)
-    return true
 end
 
 local _with_tun = function(f)
@@ -557,31 +588,31 @@ local process_tun_allow = function(self, tun)
     local allowance = self:receive_varint()
     tun.allowance = tun.allowance + allowance
     _unstarve(tun)
-    return true
+    return tun.id, allowance
 end
 
 local process_tun_transfer = function(self, tun)
-    local r = tun.xfer_in:update()
-    if r then
-        if not tun.handlers.message then
-            bail("got message but no handler set")
-        end
+    local msg = tun.xfer_in:update()
+    if msg and tun.handlers.message then
         local co = coroutine.create(tun.handlers.message)
-        assert(coroutine.resume(co, r))
+        local _, r = assert(coroutine.resume(co, msg))
         tun.starved[#tun.starved+1] = co
         _unstarve(tun)
-        return true
+        return tun.id, msg, r
+    else
+        return tun.id, msg
     end
 end
 
 local process_tun_close = function(self, tun)
-    local reason = self:receive_string() -- TODO
+    local reason = self:receive_string()
     tun:unregister()
-    return true
+    return tun.id, reason
 end
 
 local ll_handlers = {
     [OP.REQUEST] = process_request,
+    [OP.REPLY] = _with_req(process_reply),
     [OP.BROADCAST] = process_broadcast,
     [OP.PUBLISH] = process_publish,
     [OP.TUN_INIT] = process_tun_init,
@@ -590,14 +621,17 @@ local ll_handlers = {
     [OP.TUN_CLOSE] = _with_tun(process_tun_close),
 }
 
+local process_type = function(self, b)
+    if not ll_handlers[b] then unexpected_opcode(b) end
+    return b, ll_handlers[b](self)
+end
+
 local process_one = function(self, timeout)
     if timeout then self.cnx:settimeout(timeout) end
     local b, e = self.cnx:receive(1)
     if timeout then self.cnx:settimeout(nil) end
     if not b then return nil, e end
-    b = b:byte()
-    if not ll_handlers[b] then unexpected_opcode(b) end
-    return b, ll_handlers[b](self)
+    return self:process_type(b:byte())
 end
 
 local methods = {
@@ -609,6 +643,7 @@ local methods = {
     receive_binary = receive_binary,
     receive_string = receive_string,
     handshake = handshake,
+    close = close,
     teardown = teardown,
     new_req_id = new_req_id,
     new_tun_id = new_tun_id,
@@ -617,7 +652,8 @@ local methods = {
     publish = publish,
     subscribe = subscribe,
     unsubscribe = unsubscribe,
-    tunnel = new_client_tunnel_init,
+    tunnel = new_client_tunnel,
+    process_type = process_type,
     process_one = process_one,
 }
 
@@ -629,6 +665,7 @@ local new = function(port)
     self.tun_ctr = 0
     self.handlers = {pubsub = {}}
     self.tunnels = {}
+    self.requests = {}
     return self
 end
 

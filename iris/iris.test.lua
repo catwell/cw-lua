@@ -5,7 +5,7 @@ local socket = require "socket"
 local OP = iris.OP
 local T = cwtest.new()
 
-local echo = function(req) return req end
+local echo = function(req) return "=> " .. req end
 
 T:start("request/reply"); do
     local client = iris.new()
@@ -18,9 +18,11 @@ T:start("request/reply"); do
 
     local req = client:request("echo", "hello", 1000)
 
-    T:eq( {server:process_one()}, {OP.REQUEST, true} )
+    T:eq( {server:process_one()}, {OP.REQUEST, "hello", {echo("hello")}} )
 
-    T:eq( req:receive_reply(), "hello" )
+    T:eq( {client:process_one()}, {OP.REPLY, {echo("hello")}} )
+
+    T:eq( req:response(), echo("hello") )
 
     server:teardown()
     client:teardown()
@@ -40,8 +42,8 @@ T:start("broadcast"); do
 
     T:yes( client:broadcast("bcst", "hello") )
 
-    T:eq( {server1:process_one()}, {OP.BROADCAST, "hello"} )
-    T:eq( {server2:process_one()}, {OP.BROADCAST, "hello"} )
+    T:eq( {server1:process_one()}, {OP.BROADCAST, "hello", echo("hello")} )
+    T:eq( {server2:process_one()}, {OP.BROADCAST, "hello", echo("hello")} )
 
     server1:teardown()
     server2:teardown()
@@ -67,10 +69,10 @@ T:start("publish/subscribe"); do
 
     socket.sleep(1)
 
-    client:publish("topic1", "hello")
+    client:publish("topic1", "1")
 
-    T:eq( {server1:process_one()}, {OP.PUBLISH, "hello"} )
-    T:eq( {server2:process_one()}, {OP.PUBLISH, "hello"} )
+    T:eq( {server1:process_one()}, {OP.PUBLISH, {"topic1", "1"}, echo("1")} )
+    T:eq( {server2:process_one()}, {OP.PUBLISH, {"topic1", "1"}, echo("1")} )
 
     server2:unsubscribe("topic1")
     server2:subscribe("topic2")
@@ -80,8 +82,8 @@ T:start("publish/subscribe"); do
     client:publish("topic1", "1")
     client:publish("topic2", "2")
 
-    T:eq( {server1:process_one()}, {OP.PUBLISH, "1"} )
-    T:eq( {server2:process_one()}, {OP.PUBLISH, "2"} )
+    T:eq( {server1:process_one()}, {OP.PUBLISH, {"topic1", "1"}, echo("1")} )
+    T:eq( {server2:process_one()}, {OP.PUBLISH, {"topic2", "2"}, echo("2")} )
 
     server1:teardown()
     server2:teardown()
@@ -108,34 +110,46 @@ T:start("tunnel"); do
         end
     end
 
+    local r
+
     T:yes( client:handshake("") )
     T:yes( server:handshake("tunnel") )
 
     local tun = client:tunnel("tunnel", 1000)
 
-    T:eq( {server:process_one()}, {OP.TUN_INIT, true} )
+    r = {server:process_one()}
+    T:eq( type(r[2]), "number" )
+    local stun_id = r[2]
+    T:eq( r, {OP.TUN_INIT, stun_id} )
 
     T:yes( tun:confirm() )
     tun:allow(1024)
+    tun.handlers.message = echo
 
-    T:eq( {server:process_one()}, {OP.TUN_ALLOW, true} )
+    r = {server:process_one()}
+    T:eq( type(r[3]), "number" )
+    T:eq( r, {OP.TUN_ALLOW, stun_id, r[3]} )
 
     local xfer = tun:transfer("data")
     T:yes( xfer:run() )
-    T:yes( tun:process_allow() )
+    T:eq( {client:process_one()}, {OP.TUN_ALLOW, tun.id, #("data")} )
 
-    T:eq( {server:process_one()}, {OP.TUN_TRANSFER, true} )
+    T:eq( {server:process_one()}, {OP.TUN_TRANSFER, stun_id, "data"} )
     T:eq( M.msg, "data" )
 
     for i=1,#responses do
-        T:eq( tun:process_transfer(), responses[i] )
-        T:eq( {server:process_one()}, {OP.TUN_ALLOW, true} )
+        T:eq(
+            {client:process_one()},
+            {OP.TUN_TRANSFER, tun.id, responses[i], echo(responses[i])}
+        )
+        T:eq( {server:process_one()}, {OP.TUN_ALLOW, stun_id, #responses[i]} )
     end
 
     T:eq( {server:process_one(0)}, {nil, "timeout"} )
 
-    T:yes( tun:close() )
-    T:eq( {server:process_one()}, {OP.TUN_CLOSE, true} )
+    tun:close()
+    T:eq( {server:process_one()}, {OP.TUN_CLOSE, stun_id, ""} )
+    T:eq( {client:process_one()}, {OP.TUN_CLOSE, tun.id, ""} )
 
     server:teardown()
     client:teardown()
