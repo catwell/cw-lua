@@ -11,8 +11,6 @@ Just a proof of concept for now, do not try to use for anything serious.
 
 Have a look at the `examples` directory and at `iris.test.lua`.
 
-Tunnels are not supported yet.
-
 ## Copyright
 
 Copyright (c) 2014 Pierre Chapuis
