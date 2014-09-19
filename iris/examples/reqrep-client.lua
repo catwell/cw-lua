@@ -3,7 +3,9 @@ local iris = require "iris"
 local c = iris.new()
 assert(c:handshake(""))
 
-local r = assert(c:request("echo", "hello", 1000):receive_reply())
+local req = c:request("echo", "hello", 1000)
+c:process_one()
+local r = assert(req:response())
 
 c:teardown()
 
