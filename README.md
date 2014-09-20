@@ -12,7 +12,7 @@ please do, but proceed with caution and report bugs you find.
 
 ## Dependencies
 
-iris-lua itself only depends on LuaSocket.
+The client itself only depends on LuaSocket.
 
 You will need [cwtest](https://github.com/catwell/cwtest)to run the test suite.
 
