@@ -5,7 +5,7 @@ local c = iris.new()
 assert(c:handshake(""))
 
 for i=1,5 do
-    c:publish("pubsub", "message " .. i)
+    c:publish("somechan", "message " .. i)
     socket.sleep(1)
 end
 

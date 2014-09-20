@@ -14,7 +14,7 @@ func main() {
 
     for i := 1; i <= 5; i++ {
         msg := []byte(fmt.Sprintf("message %d", i))
-        conn.Publish("pubsub", msg)
+        conn.Publish("somechan", msg)
         time.Sleep(1 * time.Second)
     }
 }

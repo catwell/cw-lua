@@ -18,7 +18,7 @@ func main() {
     }
     defer conn.Close()
 
-    conn.Subscribe("pubsub", new(H), nil)
+    conn.Subscribe("somechan", new(H), nil)
 
     log.Printf("waiting...")
     time.Sleep(100 * time.Second)
