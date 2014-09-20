@@ -426,11 +426,17 @@ local xfer_in_new = function(tunnel)
     return self
 end
 
+local tun_cosend = function(self, msg)
+    local xfer = xfer_new(self, msg)
+    while not xfer:run() do coroutine.yield() end
+end
+
 local tun_methods = {
     register = tun_register,
     unregister = tun_unregister,
     allow = tun_allow,
     transfer = xfer_new,
+    cosend = tun_cosend,
     close = tun_close,
 }
 
