@@ -32,7 +32,9 @@ I am unlikely to work again on any of those projects.
 
 Not really tools, but rather small examples of how to do some things.
 
-- cwtools: a small collection of useful functions.
+- cwtools: a small collection of useful functions
+- concurrent-dotproduct: a simple ConcurrentLua example (outdated)
+- unix: luaposix sample code (and C counterparts)
 
 ## Graduated
 
