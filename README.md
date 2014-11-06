@@ -14,7 +14,6 @@ I will at least try to give you an answer. I may update
 some of them.
 
 - sha256: a SHA-256 implementation in pure LuaJIT+FFI.
-- cwtools: a small collection of useful functions.
 - crdt: implementation of some Conflict-Free Replicated Data Types in Lua.
 - deque: simple deque implementation (similar to the lists used in fakeredis).
 - bimap: mirrored map implementation.
@@ -28,6 +27,12 @@ I am unlikely to work again on any of those projects.
 - lua-pipe: syntax experiment, Lua version of Pipe in Python.
 - lua-zerorpc: [ZeroRPC](http://zerorpc.dotcloud.com/) implementation.
 - nsqc: a [NSQ](http://nsq.io) client.
+
+## Sample code
+
+Not really tools, but rather small examples of how to do some things.
+
+- cwtools: a small collection of useful functions.
 
 ## Graduated
 
