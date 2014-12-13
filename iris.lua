@@ -1,7 +1,5 @@
 local socket = require "socket"
 
--- NOTE: draft 2 actually says v1-draft2,
--- but the server expects v1.0-draft2
 local PROTO_VERSION = "v1.0-draft2"
 local CLIENT_MAGIC = "iris-client-magic"
 local RELAY_MAGIC = "iris-relay-magic"
