@@ -2,6 +2,7 @@ local cwtest = require "cwtest"
 package.path = package.path .. ";./crdt/?.lua"
 local GCounter = require "g_counter"
 local PNCounter = require "pn_counter"
+local BoundedCounter = require "bounded_counter"
 local GSet = require "g_set"
 local TwoPSet = require "2p_set"
 local ORSet = require "or_set"
@@ -61,6 +62,81 @@ T:start("PN-Counter"); do
   ca:decr(8)
   cb:merge(ca)
   T:eq(cb:value(), -3)
+
+end; T:done()
+
+T:start("Bounded Counter"); do
+
+  local ca = BoundedCounter.new("a")
+  ca:incr()
+  ca:incr()
+  ca:incr()
+  T:yes(ca:decr())
+  T:eq(ca:value(), 2)
+  T:yes(ca:decr())
+  T:yes(ca:decr())
+  T:eq(ca:value(), 0)
+  T:no(ca:decr())
+  T:eq(ca:value(), 0)
+  ca:incr()
+  ca:incr()
+  T:eq(ca:value(), 2)
+
+  local cb = BoundedCounter.new("b")
+  cb:merge(ca)
+  T:eq(cb:value(), 2)
+
+  cb:incr()
+  cb:incr()
+  cb:incr()
+  cb:incr()
+  cb:incr()
+  cb:merge(ca)
+  T:eq(cb:value(), 7)
+  T:eq(ca:value(), 2)
+  ca:merge(cb)
+  T:eq(ca:value(), 7)
+
+  T:yes(ca:decr())
+  T:yes(ca:decr())
+  T:no(ca:decr())
+  T:eq(ca:value(), 5)
+
+  ca:rebalance()
+  T:no(ca:decr())
+
+  cb:merge(ca)
+  T:yes(cb:rebalance())
+  T:no(cb:rebalance())
+  ca:merge(cb)
+  T:eq(ca:value(), 5)
+  T:eq(cb:value(), 5)
+
+  T:yes(ca:decr())
+  T:yes(ca:decr())
+  T:no(ca:decr())
+  T:eq(ca:value(), 3)
+
+  cb:merge(ca)
+  T:yes(cb:rebalance())
+  ca:merge(cb)
+  T:yes(ca:decr())
+  T:no(ca:decr())
+  T:eq(ca:value(), 2)
+
+  cb:merge(ca)
+  T:yes(cb:rebalance())
+  ca:merge(cb)
+  T:yes(ca:decr())
+  T:no(ca:decr())
+  T:eq(ca:value(), 1)
+
+  cb:merge(ca)
+  T:yes(cb:rebalance())
+  ca:merge(cb)
+  T:yes(ca:decr())
+  T:no(ca:decr())
+  T:eq(ca:value(), 0)
 
 end; T:done()
 

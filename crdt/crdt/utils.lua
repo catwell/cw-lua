@@ -13,7 +13,7 @@ end
 local defmap2 = function(maker)
   assert (type(maker) == "function")
   local f = function(t, k)
-    t[k] = maker()
+    t[k] = maker(k)
     return t[k]
   end
   return setmetatable({}, {__index = f})
