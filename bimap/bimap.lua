@@ -1,3 +1,6 @@
+--- Bimap implementation by Pierre 'catwell' Chapuis
+--- MIT licensed (see LICENSE.txt)
+
 local _newindex = function(l, r)
   return function(t, k, v)
     if v ~= nil then

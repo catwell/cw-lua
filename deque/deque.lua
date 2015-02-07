@@ -1,3 +1,6 @@
+--- Deque implementation by Pierre 'catwell' Chapuis
+--- MIT licensed (see LICENSE.txt)
+
 local push_right = function(self, x)
   assert(x ~= nil)
   self.tail = self.tail + 1

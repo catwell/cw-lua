@@ -1,6 +1,6 @@
---- SHA-256 implementation by Pierre 'Catwell' Chapuis
+--- SHA-256 implementation by Pierre 'catwell' Chapuis
 --- MIT licensed (see LICENSE.txt)
----Only works on little endian platforms.
+--- Only works on little endian platforms.
 
 local ffi = require "ffi"
 assert(ffi.abi("le"))
