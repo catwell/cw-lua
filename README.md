@@ -17,6 +17,7 @@ some of them.
 - crdt: implementation of some Conflict-Free Replicated Data Types in Lua.
 - deque: simple deque implementation (similar to the lists used in fakeredis).
 - bimap: mirrored map implementation.
+- cwbase: a base-to-base converter.
 
 ## Unmaintained
 
