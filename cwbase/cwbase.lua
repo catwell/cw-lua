@@ -63,6 +63,7 @@ return {
     base62 = _converter(ALPHABET_B62),
     base36 = _converter(ALPHABET_B62:sub(1,36)),
     base10 = _converter(ALPHABET_B62:sub(1,10)),
+    base16 = _converter(ALPHABET_B62:sub(1,16)),
     base64 = _converter(ALPHABET_B64),
     base64url = _converter(ALPHABET_B64URL),
     base256 = _converter(ALPHABET_B256),
