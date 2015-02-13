@@ -10,6 +10,14 @@ local ALPHABET_B64 = letters:upper() .. letters .. figures .. "+/"
 local ALPHABET_B64URL = ALPHABET_B64:sub(1,62) .. "-_"
 local ALPHABET_B256 = string.char(table.unpack(ascii))
 
+local _iszero = function(B)
+    if B.iszero then return B.iszero end
+    assert(B.compare)
+    return function(x)
+        return B.compare(x, 0) == 0
+    end
+end
+
 local to_bignum = function(self, source)
     assert(type(source) == "string")
     local B = self.bignum
@@ -27,11 +35,13 @@ end
 
 local from_bignum = function(self, n)
     local B = self.bignum
+    local iszero = _iszero(B)
+    local div = assert(B.idiv or B.div)
     local b = B.number(self.base)
     local r = {}
-    while not B.iszero(n) do
+    while not iszero(n) do
         r[#r+1] = self.alphabet:byte(B.mod(n, b):tonumber() + 1)
-        n = B.div(n, b)
+        n = div(n, b)
     end
     return string.char(table.unpack(r)):reverse()
 end
