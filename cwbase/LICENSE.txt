@@ -17,3 +17,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+tedbigint.lua is (c) 2010 Ted Unangst, modified by me.
+See license inside this file.
+cwbase can be used without tedbigint,
+and it is not installed by the rockspec.
