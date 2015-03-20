@@ -1,3 +1,6 @@
+-- This is a bigint library by Ted Unangst, modified by Pierre Chapuis.
+-- Original license follows.
+
 --
 -- Copyright (c) 2010 Ted Unangst <ted.unangst@gmail.com>
 --
@@ -59,6 +62,8 @@
 -- off just reading the C code.
 -- C version homepage: http://www.acme.com/software/bigint/
 --
+
+local bigint
 
 -- two functions to help make Lua act more like C
 local function fl(x)
@@ -496,7 +501,7 @@ bigintmt = {
 local cache = {}
 local ncache = 0
 
-function bigint(n)
+bigint = function(n)
     if cache[n] then
         return cache[n]
     end
@@ -530,3 +535,19 @@ function bigint(n)
     ncache = ncache + 1
     return bi
 end
+
+return {
+    number = bigint,
+    add = add,
+    mul = mul,
+    div = div,
+    mod = mod,
+    __eq = function(a, b)
+        if type(a) == "number" then a = bigint(a) end
+        if type(b) == "number" then b = bigint(b) end
+        return a == b
+    end,
+    ["tonumber"] = function(n)
+        return tonumber(biginttostring(n))
+    end
+}

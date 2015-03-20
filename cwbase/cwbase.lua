@@ -12,9 +12,9 @@ local ALPHABET_B256 = string.char(table.unpack(ascii))
 
 local _iszero = function(B)
     if B.iszero then return B.iszero end
-    assert(B.compare)
+    assert(B.__eq)
     return function(x)
-        return B.compare(x, 0) == 0
+        return B.__eq(x, 0)
     end
 end
 
@@ -35,12 +35,13 @@ end
 
 local from_bignum = function(self, n)
     local B = self.bignum
+    if type(n) == "number" then n = B.number(n) end
     local iszero = _iszero(B)
     local div = assert(B.idiv or B.div)
-    local b = B.number(self.base)
+    local b = self.base
     local r = {}
     while not iszero(n) do
-        r[#r+1] = self.alphabet:byte(B.mod(n, b):tonumber() + 1)
+        r[#r+1] = self.alphabet:byte(B.tonumber(B.mod(n, b)) + 1)
         n = div(n, b)
     end
     return string.char(table.unpack(r)):reverse()

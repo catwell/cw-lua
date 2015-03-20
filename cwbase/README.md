@@ -10,6 +10,12 @@ it can be used to convert any base to another base as well.
 You need a bignum library. If you do not provide one, cwbase will use
 [lbc](http://webserver2.tecgraf.puc-rio.br/~lhf/ftp/lua/#lbc).
 
+This repository includes tedbigint, a pure Lua bignum library modified
+to be compatible with cwbase. Note that tedbigint is *not* installed
+by the cwbase rockspec (lbc is).
+
+The test suite requires [cwtest](https://github.com/catwell/cwtest).
+
 ## Usage
 
 ### Convert from a base to a bignum
@@ -33,11 +39,11 @@ You need a bignum library. If you do not provide one, cwbase will use
 
 ### Use another bignum library
 
-For now, cwbase is only tested with lbc and lmapm. It should work with
-other libraries though.
+For now, cwbase is only tested with lbc, lmapm and tedbigint.
+It may well work with other libraries though.
 
-    local mapm = require "mapm"
-    local b36 = cwbase.base36(mapm)
+    local b36 = cwbase.base36(require "mapm") -- for use with mapm
+    local b36 = cwbase.base36(require "tedbigint") -- for use with tedbigint
 
 ### Use your own alphabet
 
