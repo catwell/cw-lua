@@ -4,11 +4,12 @@
 local letters = "abcdefghijklmnopqrstuvwxyz"
 local figures = "0123456789"
 local ascii = {}; for i=1,256 do ascii[i] = i-1 end
+local unpack = table.unpack or unpack
 
 local ALPHABET_B62 = figures .. letters .. letters:upper()
 local ALPHABET_B64 = letters:upper() .. letters .. figures .. "+/"
 local ALPHABET_B64URL = ALPHABET_B64:sub(1,62) .. "-_"
-local ALPHABET_B256 = string.char(table.unpack(ascii))
+local ALPHABET_B256 = string.char(unpack(ascii))
 
 local _iszero = function(B)
     if B.iszero then return B.iszero end
@@ -44,7 +45,7 @@ local from_bignum = function(self, n)
         r[#r+1] = self.alphabet:byte(B.tonumber(B.mod(n, b)) + 1)
         n = div(n, b)
     end
-    return string.char(table.unpack(r)):reverse()
+    return string.char(unpack(r)):reverse()
 end
 
 local methods = {
