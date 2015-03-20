@@ -508,7 +508,7 @@ function bigint(n)
         end
         local start = 1
         local sign = 1
-        if digits[i] == '-' then
+        if digits[1] == '-' then
             sign = -1
             start = 2
         end
