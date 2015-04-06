@@ -36,7 +36,7 @@ Not really tools, but rather small examples of how to do some things.
 - cwtools: a small collection of useful functions
 - concurrent-dotproduct: a simple ConcurrentLua example (outdated)
 - unix: luaposix sample code (and C counterparts)
-- tcpchat: simple TCP chat with LuaSocket
+- tcpchat: simple TCP chat + Lua interpreter with LuaSocket
 
 ## Graduated
 
