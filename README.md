@@ -37,6 +37,7 @@ Not really tools, but rather small examples of how to do some things.
 - concurrent-dotproduct: a simple ConcurrentLua example (outdated)
 - unix: luaposix sample code (and C counterparts)
 - tcpchat: simple TCP chat + Lua interpreter with LuaSocket
+- git: toy implementation of parts of Git
 
 ## Graduated
 
