@@ -42,6 +42,11 @@ local write_file = function(path, data)
     return r, e
 end
 
+local bimap = function(t)
+    for k, v in pairs(t) do t[v] = k end
+    return t
+end
+
 return {
     sha1 = sha1,
     compress = compress,
@@ -49,4 +54,5 @@ return {
     mkdir = mkdir,
     read_file = read_file,
     write_file = write_file,
+    bimap = bimap,
 }
