@@ -1,12 +1,19 @@
 local sha1 = require "sha1"
 local zlib = require "zlib"
 
+-- use lua-zlib, available at https://github.com/brimworks/lua-zlib
+
 _DEBUG = false -- LuaPosix
 local posix = require "posix"
 local ERRNO = require "posix.errno"
 
-local compress = zlib.compress
-local decompress = zlib.decompress
+local compress = function(s)
+    return zlib.deflate()(s, "finish")
+end
+
+local decompress = function(s)
+    return zlib.inflate()(s)
+end
 
 local mkdir = function(path)
     local ok, err, errcode = posix.mkdir(path)
