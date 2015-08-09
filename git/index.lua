@@ -15,7 +15,7 @@ local parse_header = function(self)
 end
 
 local parse_entries = function(self, n)
-    local offset, r = 12, {}
+    local offset, r = 13, {}
     for i=1, n do
         local e = {}
         e.ctime_sec, e.ctime_nsec, e.mtime_sec, e.mtime_nsec,
