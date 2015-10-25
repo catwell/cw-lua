@@ -5,6 +5,7 @@ Public domain.
 */
 
 #include "ecrypt-sync.h"
+#include <stddef.h>
 
 #define ROTATE(v,c) (ROTL32(v,c))
 #define XOR(v,w) ((v) ^ (w))
@@ -49,15 +50,23 @@ void ECRYPT_keysetup(ECRYPT_ctx *x,const u8 *k,u32 kbits,u32 ivbits)
   x->input[3] = U8TO32_LITTLE(constants + 12);
 }
 
-void ECRYPT_ivsetup(ECRYPT_ctx *x,const u8 *iv)
+void ECRYPT_ivsetup(ECRYPT_ctx *x,const u8 *iv,const u8* counter)
 {
-  x->input[12] = 0;
-  x->input[13] = 0;
+  x->input[12] = (counter == NULL) ? 0 : U8TO32_LITTLE(counter + 0);
+  x->input[13] = (counter == NULL) ? 0 : U8TO32_LITTLE(counter + 4);
   x->input[14] = U8TO32_LITTLE(iv + 0);
   x->input[15] = U8TO32_LITTLE(iv + 4);
 }
 
-void ECRYPT_encrypt_bytes(ECRYPT_ctx *x,const u8 *m,u8 *c,u32 bytes)
+void ECRYPT_IETF_ivsetup(ECRYPT_ctx *x,const u8 *iv,const u8* counter)
+{
+    x->input[12] = (counter == NULL) ? 0 : U8TO32_LITTLE(counter);
+    x->input[13] = U8TO32_LITTLE(iv + 0);
+    x->input[14] = U8TO32_LITTLE(iv + 4);
+    x->input[15] = U8TO32_LITTLE(iv + 8);
+}
+
+void ECRYPT_encrypt_bytes(ECRYPT_ctx *x,const u8 *m,u8 *c,u32 bytes,int rounds)
 {
   u32 x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15;
   u32 j0, j1, j2, j3, j4, j5, j6, j7, j8, j9, j10, j11, j12, j13, j14, j15;
@@ -107,7 +116,7 @@ void ECRYPT_encrypt_bytes(ECRYPT_ctx *x,const u8 *m,u8 *c,u32 bytes)
     x13 = j13;
     x14 = j14;
     x15 = j15;
-    for (i = 8;i > 0;i -= 2) {
+    for (i = rounds;i > 0;i -= 2) {
       QUARTERROUND( x0, x4, x8,x12)
       QUARTERROUND( x1, x5, x9,x13)
       QUARTERROUND( x2, x6,x10,x14)
@@ -190,12 +199,12 @@ void ECRYPT_encrypt_bytes(ECRYPT_ctx *x,const u8 *m,u8 *c,u32 bytes)
 
 void ECRYPT_decrypt_bytes(ECRYPT_ctx *x,const u8 *c,u8 *m,u32 bytes)
 {
-  ECRYPT_encrypt_bytes(x,c,m,bytes);
+  ECRYPT_encrypt_bytes(x,c,m,bytes,8);
 }
 
 void ECRYPT_keystream_bytes(ECRYPT_ctx *x,u8 *stream,u32 bytes)
 {
   u32 i;
   for (i = 0;i < bytes;++i) stream[i] = 0;
-  ECRYPT_encrypt_bytes(x,stream,stream,bytes);
+  ECRYPT_encrypt_bytes(x,stream,stream,bytes,8);
 }

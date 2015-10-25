@@ -91,8 +91,17 @@ void ECRYPT_keysetup(
  * IV's.
  */
 void ECRYPT_ivsetup(
+  ECRYPT_ctx* ctx,
+  const u8* iv,
+  const u8* counter);
+
+/*
+ * IV setup for the IETF version of ChaCha (RFC 7539)
+ */
+void ECRYPT_IETF_ivsetup(
   ECRYPT_ctx* ctx, 
-  const u8* iv);
+  const u8* iv,
+  const u8* counter);
 
 /*
  * Encryption/decryption of arbitrary length messages.
@@ -133,10 +142,12 @@ void ECRYPT_ivsetup(
  */
 
 void ECRYPT_encrypt_bytes(
-  ECRYPT_ctx* ctx, 
-  const u8* plaintext, 
-  u8* ciphertext, 
-  u32 msglen);                /* Message length in bytes. */ 
+  ECRYPT_ctx* ctx,
+  const u8* plaintext,
+  u8* ciphertext,
+  u32 msglen,                 /* Message length in bytes. */
+  int rounds
+);
 
 void ECRYPT_decrypt_bytes(
   ECRYPT_ctx* ctx, 
