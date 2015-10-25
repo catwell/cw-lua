@@ -6,10 +6,10 @@ env:
   global:
     - LUAROCKS=2.2.0
   matrix:
-    #- LUA=lua5.1
-    #- LUA=lua5.2
+    - LUA=lua5.1
+    - LUA=lua5.2
     - LUA=lua5.3
-    #- LUA=luajit
+    - LUA=luajit
 
 branches:
   only:
@@ -24,6 +24,7 @@ install:
 before_script:
   - luarocks install penlight
   - luarocks install cwtest
+  - luarocks install compat53
 
 script:
   - lua chacha.test.lua

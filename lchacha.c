@@ -7,6 +7,12 @@
 
 #include "ecrypt-sync.h"
 
+#if LUA_VERSION_NUM == 501
+#define l_setfuncs(L, funcs)    luaL_register(L, NULL, funcs)
+#else
+#define l_setfuncs(L, funcs)    luaL_setfuncs(L, funcs, 0)
+#endif
+
 static int chacha_generic_crypt(lua_State *L, bool is_ietf)
 {
     ECRYPT_ctx ctx;
@@ -67,6 +73,7 @@ int luaopen_chacha(lua_State *L)
         { "ietf_crypt", chacha_ietf_crypt },
         { NULL, NULL }
     };
-    luaL_newlib(L, l);
+    lua_newtable(L);
+    l_setfuncs(L, l);
     return 1;
 }

@@ -1,7 +1,10 @@
+require "compat53"
 local cwtest = require "cwtest"
 local chacha = require "chacha"
 
 local T = cwtest.new()
+
+local unpack = table.unpack or unpack
 
 local S = { -- https://tools.ietf.org/html/rfc7539#section-2.4.1
     plaintext = table.concat {
@@ -12,7 +15,7 @@ local S = { -- https://tools.ietf.org/html/rfc7539#section-2.4.1
 do
     local t = {}
     for i=0x00, 0x1f do t[#t+1] = i end
-    S.key = string.char(table.unpack(t))
+    S.key = string.char(unpack(t))
     S.ref_iv = string.char(0, 0, 0, 0x4a, 0, 0x02, 0, 0)
     S.ietf_iv = string.char(0, 0, 0, 0, 0, 0, 0, 0x4a, 0, 0, 0, 0)
 end
@@ -30,7 +33,7 @@ f9 1b 65 c5 52 47 33 ab 8f 59 3d ab cd 62 b3 57
 do
     local s, t = ietf_241_expected, {}
     for x in s:gmatch("[%S]+") do t[#t+1] = tonumber(x, 16) end
-    ietf_241_expected = string.char(table.unpack(t))
+    ietf_241_expected = string.char(unpack(t))
 end
 
 T:start("basics"); do
