@@ -19,9 +19,11 @@ before_install:
   - source .travis/setenv_lua.sh
 
 install:
+  - luarocks install rockspec/chacha-scm-1.rockspec
+
+before_script:
   - luarocks install penlight
   - luarocks install cwtest
-  - luarocks install rockspec/chacha-scm-1.rockspec
 
 script:
   - lua chacha.test.lua
