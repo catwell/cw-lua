@@ -1,0 +1,32 @@
+language: c
+
+sudo: false
+
+env:
+  global:
+    - LUAROCKS=2.2.0
+  matrix:
+    #- LUA=lua5.1
+    #- LUA=lua5.2
+    - LUA=lua5.3
+    #- LUA=luajit
+
+branches:
+  only:
+    - master
+
+before_install:
+  - source .travis/setenv_lua.sh
+
+install:
+  - luarocks install penlight
+  - luarocks install cwtest
+  - luarocks install rockspec/chacha-scm-1.rockspec
+
+script:
+  - lua chacha.test.lua
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always

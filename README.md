@@ -1,5 +1,7 @@
 # lua-chacha
 
+[![Build Status](https://travis-ci.org/catwell/lua-chacha.png?branch=master)](https://travis-ci.org/catwell/lua-chacha)
+
 ## Presentation
 
 This is a Lua C module implementing for the
