@@ -1,4 +1,4 @@
-require "compat53"
+if _VERSION ~= "Lua 5.3" then require "compat53" end
 local cwtest = require "cwtest"
 local chacha = require "chacha"
 
