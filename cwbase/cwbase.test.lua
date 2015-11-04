@@ -56,4 +56,17 @@ do_tests("bc", bc)
 do_tests("mapm", mapm)
 do_tests("tedbigint", tbi)
 
+T:start("hex"); do
+    local t_raw, t_hex = {}, {}
+    for i=0,255 do
+        t_raw[i+1] = string.char(i)
+        t_hex[i+1] = string.format("%02x", i)
+    end
+    local s_raw, s_hex = table.concat(t_raw), table.concat(t_hex)
+    T:eq(#s_raw, 256)
+    T:eq(#s_hex, 512)
+    T:eq(cwbase.to_hex(s_raw), s_hex)
+    T:eq(cwbase.from_hex(s_hex), s_raw)
+end; T:done()
+
 T:exit()

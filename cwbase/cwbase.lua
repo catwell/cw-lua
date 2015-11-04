@@ -5,6 +5,7 @@ local letters = "abcdefghijklmnopqrstuvwxyz"
 local figures = "0123456789"
 local ascii = {}; for i=1,256 do ascii[i] = i-1 end
 local unpack = table.unpack or unpack
+local fmt = string.format
 
 local ALPHABET_B62 = figures .. letters .. letters:upper()
 local ALPHABET_B64 = letters:upper() .. letters .. figures .. "+/"
@@ -70,6 +71,19 @@ local _converter = function(alphabet)
     end
 end
 
+local _byte_to_hex = function(x)
+    return fmt("%02x", x:byte())
+end
+local to_hex = function(s)
+    return s:gsub("(.)", _byte_to_hex)
+end
+local _byte_from_hex = function(x)
+    return string.char(tonumber(x, 16))
+end
+local from_hex = function(s)
+    return  s:gsub("(..)", _byte_from_hex)
+end
+
 return {
     converter = converter,
     base62 = _converter(ALPHABET_B62),
@@ -79,4 +93,6 @@ return {
     base64 = _converter(ALPHABET_B64),
     base64url = _converter(ALPHABET_B64URL),
     base256 = _converter(ALPHABET_B256),
+    to_hex = to_hex,
+    from_hex = from_hex,
 }
