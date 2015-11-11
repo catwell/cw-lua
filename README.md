@@ -7,6 +7,13 @@ that do not deserve their own repository.
 These are mostly unmaintained prototypes and ideas I gave up on.
 Projects I become more serious about graduate to their own repositories.
 
+## Prototypes
+
+Me playing with something. Will move to another category soon,
+most probably "unmaintained".
+
+- lua-mdb: pure Lua code to read LMDB databases
+
 ## Maintained (somewhat)
 
 If you send me a bug report on one of those projects,
