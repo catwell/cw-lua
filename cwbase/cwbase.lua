@@ -75,13 +75,13 @@ local _byte_to_hex = function(x)
     return fmt("%02x", x:byte())
 end
 local to_hex = function(s)
-    return s:gsub("(.)", _byte_to_hex)
+    return (s:gsub("(.)", _byte_to_hex))
 end
 local _byte_from_hex = function(x)
     return string.char(tonumber(x, 16))
 end
 local from_hex = function(s)
-    return  s:gsub("(..)", _byte_from_hex)
+    return (s:gsub("(..)", _byte_from_hex))
 end
 
 return {
