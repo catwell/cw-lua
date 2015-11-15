@@ -8,6 +8,10 @@ local NUMKEYS = function(page)
     return (page.header.pb_lower - PAGEHDRSZ) // 2
 end
 
+local NODESZ = function(node)
+    return node.mn_lo + (node.mn_hi << 16)
+end
+
 local _mp_flags = function(i)
     return {
         BRANCH = _bit(i, 0x01),
@@ -91,9 +95,14 @@ local _node = function(raw, offset)
     r.data = {}
     r.data.k = raw:sub(offset, offset + r.mn_ksize - 1)
     offset = offset + r.mn_ksize
-    r.data.v = raw:sub(offset, offset + r.mn_lo - 1)
-    offset = offset + r.mn_lo
-    return r, offset
+    r.data.mv_size = NODESZ(r)
+    if r.mn_flags.BIGDATA then
+        -- NOTE: this read is *not* aligned
+        r.data.overflow_pgno, offset = string.unpack("<I8", raw, offset)
+    else
+        r.data.v = raw:sub(offset, offset + r.data.mv_size - 1)
+    end
+    return r
 end
 
 local _leaf = function(page, raw, base)
@@ -113,6 +122,8 @@ local _page = function(raw, offset)
         r.meta = _meta(raw, base)
     elseif r.header.mp_flags.LEAF then
         r.leaf = _leaf(r, raw, base)
+    elseif r.header.mp_flags.OVERFLOW then
+        -- nothing
     else
         -- TODO
         return nil, "unknown page type"
@@ -124,4 +135,5 @@ return {
     page_header = _page_header,
     page = _page,
     NUMKEYS = NUMKEYS,
+    PAGEHDRSZ = PAGEHDRSZ,
 }

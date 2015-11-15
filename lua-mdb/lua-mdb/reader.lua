@@ -11,18 +11,27 @@ local dbg = function(self, ...)
     if self.DEBUG then print(fmt(...)) end
 end
 
-local raw_page = function(self, n)
+local raw_data = function(self, offset, size)
+    assert(
+        type(self) == "table" and
+        type(offset) == "number" and offset >= 0 and
+        type(size) == "number" and size >= 0
+    )
     local f, r, e
     f, e = io.open(self.path, "rb")
     if not f then return nil, e end
-    r, e = f:seek("set", n * PAGESIZE)
+    r, e = f:seek("set", offset)
     if not r then
         f:close()
         return nil, e
     end
-    r, e = f:read(PAGESIZE)
+    r, e = f:read(size)
     f:close()
     return r, e
+end
+
+local raw_page = function(self, n)
+    return raw_data(self, n * PAGESIZE, PAGESIZE)
 end
 
 local page = function(self, n)
@@ -56,7 +65,18 @@ local dump = function(self)
     if not root_page then return nil, e end
     local nodes = root_page.leaf.nodes
     for i=1,#nodes do
-        r[nodes[i].data.k] = nodes[i].data.v
+        local n = nodes[i]
+        if n.mn_flags.BIGDATA then
+            local v, e = raw_data(
+                self,
+                n.data.overflow_pgno * PAGESIZE + parser.PAGEHDRSZ,
+                n.data.mv_size
+            )
+            if not v then return nil, e end
+            r[n.data.k] = v
+        else
+            r[n.data.k] = n.data.v
+        end
     end
     return r
 end
