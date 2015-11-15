@@ -1,3 +1,5 @@
+local fmt = string.format
+
 local _bit = function(n, mask)
     return (n & mask) == mask
 end
@@ -10,6 +12,14 @@ end
 
 local NODESZ = function(node)
     return node.mn_lo + (node.mn_hi << 16)
+end
+
+local flags_repr = function(flags)
+    local t = {}
+    for k, v in pairs(flags) do
+        if v then t[#t+1] = k end
+    end
+    return table.concat(t, " | ")
 end
 
 local _mp_flags = function(i)
@@ -126,7 +136,7 @@ local _page = function(raw, offset)
         -- nothing
     else
         -- TODO
-        return nil, "unknown page type"
+        return nil, fmt("unknown page type: %s", flags_repr(r.header.mp_flags))
     end
     return r
 end

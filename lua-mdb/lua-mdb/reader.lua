@@ -82,13 +82,14 @@ local dump = function(self)
 end
 
 local methods = {
+    pick_meta_page = pick_meta_page,
     dump = dump,
     dbg = dbg,
 }
 
 local new = function(path)
     assert(type(path) == "string")
-    local r = {path = path, DEBUG = false}
+    local r = {path = path, PAGESIZE = PAGESIZE, DEBUG = false}
     return setmetatable(r, {__index = methods})
 end
 
