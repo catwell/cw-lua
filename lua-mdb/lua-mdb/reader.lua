@@ -11,6 +11,20 @@ local dbg = function(self, ...)
     if self.DEBUG then print(fmt(...)) end
 end
 
+local err = function(self, e)
+    assert(e)
+    if self.DEBUG then error(e or "?") end
+    return nil, e
+end
+
+local res = function(self, r, e)
+    if self.DEBUG then
+        return assert(r, e)
+    else
+        return r, e
+    end
+end
+
 local raw_data = function(self, offset, size)
     assert(
         type(self) == "table" and
@@ -19,15 +33,15 @@ local raw_data = function(self, offset, size)
     )
     local f, r, e
     f, e = io.open(self.path, "rb")
-    if not f then return nil, e end
+    if not f then return self:err(e) end
     r, e = f:seek("set", offset)
     if not r then
         f:close()
-        return nil, e
+        return self:err(e)
     end
     r, e = f:read(size)
     f:close()
-    return r, e
+    return self:res(r, e)
 end
 
 local raw_page = function(self, n)
@@ -37,54 +51,129 @@ end
 local page = function(self, n)
     assert(type(n) == "number" and n >= 0)
     local raw, e = raw_page(self, n)
-    if not raw then return nil, e end
+    if not raw then return self:err(e) end
     local r, e = parser.page(raw)
     if not r then
         e = fmt("while parsing page %d: %s", n, e_str(e))
     end
-    return r, e
+    return self:res(r, e)
 end
 
 local pick_meta_page = function(self)
     local m = {page(self, 0), page(self, 1)}
     if not (m[1] and m[2]) then
-        return nil, fmt("could not read meta page: %s", e_str(m[3]))
+        return self:err(fmt("could not read meta page: %s", e_str(m[3])))
     end
     local n = m[2].meta.mm_txnid > m[1].meta.mm_txnid and 2 or 1
     self:dbg("picked meta page %d", n - 1)
     return m[n]
 end
 
-local dump = function(self)
+-- returns the ID of the first node >= key or nil
+-- TODO use binary search
+local node_search = function(nodes, key)
+    for i=1,#nodes do
+        if nodes[i].k >= key then return i end
+    end
+end
+
+local branch_search = function(nodes, key)
+    local i = node_search(nodes, key)
+    if not i then
+        return #nodes
+    elseif nodes[i].k == key then
+        return i
+    else
+        return i-1
+    end
+end
+
+local is_branch = function(page)
+    return page.header.mp_flags.BRANCH
+end
+
+local is_leaf = function(page)
+    return page.header.mp_flags.LEAF
+end
+
+local leaf_value = function(self, node)
+    if node.mn_flags.BIGDATA then
+        local v, e = raw_data(
+            self,
+            node.overflow_pgno * PAGESIZE + parser.PAGEHDRSZ,
+            node.mv_size
+        )
+        if not v then return self:err(e) end
+        return v
+    else
+        return node.v
+    end
+end
+
+local leaf_content = function(self, page)
+    assert(page and is_leaf(page))
     local r = {}
+    for i=1,#page.nodes do
+        local v, e = leaf_value(self, page.nodes[i])
+        if not v then return self:err(e) end
+        r[page.nodes[i].k] = v
+    end
+    return r
+end
+
+local get = function(self, k)
     local meta, e = pick_meta_page(self)
-    if not meta then return nil, e end
+    if not meta then return self:err(e) end
+    local root_page_num = meta.meta.mm_dbs.main.md_root
+    if root_page_num < 0 then return nil end
+    local p, e = page(self, meta.meta.mm_dbs.main.md_root)
+    if not p then return self:err(e) end
+    while is_branch(p) do
+        local i = branch_search(p.nodes, k)
+        p, e = page(self, p.nodes[i].mp_pgno)
+        if not p then return self:err(e) end
+    end
+    assert(is_leaf(p))
+    local i = node_search(p.nodes, k)
+    if not i then return nil end
+    return leaf_value(self, p.nodes[i])
+end
+
+local _dump; _dump = function(self, p, t)
+    local q, e, ok
+    if not t then t = {} end
+    if is_branch(p) then
+        for i=1, #p.nodes do
+            q, e = page(self, p.nodes[i].mp_pgno)
+            if not q then return self:err(e) end
+            ok, e = _dump(self, q, t)
+            if not ok then return self:err(e) end
+        end
+    else
+        q, e = leaf_content(self, p)
+        if not q then return self:err(e) end
+        for k, v in pairs(q) do t[k] = v end
+    end
+    return t
+end
+
+local dump = function(self)
+    local meta, e = pick_meta_page(self)
+    if not meta then return self:err(e) end
     local root_page_num = meta.meta.mm_dbs.main.md_root
     if root_page_num < 0 then return {} end
     local root_page, e = page(self, meta.meta.mm_dbs.main.md_root)
-    if not root_page then return nil, e end
-    local nodes = root_page.leaf.nodes
-    for i=1,#nodes do
-        local n = nodes[i]
-        if n.mn_flags.BIGDATA then
-            local v, e = raw_data(
-                self,
-                n.data.overflow_pgno * PAGESIZE + parser.PAGEHDRSZ,
-                n.data.mv_size
-            )
-            if not v then return nil, e end
-            r[n.data.k] = v
-        else
-            r[n.data.k] = n.data.v
-        end
-    end
-    return r
+    if not root_page then return self:err(e) end
+    return _dump(self, root_page)
 end
 
 local methods = {
     pick_meta_page = pick_meta_page,
     dump = dump,
+    get = get,
     dbg = dbg,
+    err = err,
+    res = res,
 }
 
 local new = function(path)

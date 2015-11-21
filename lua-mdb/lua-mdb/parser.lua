@@ -14,6 +14,11 @@ local NODESZ = function(node)
     return node.mn_lo + (node.mn_hi << 16)
 end
 
+local NODEPGNO = function(h1, h2, h3)
+    -- 64 bit: pgno in branch nodes is 6B
+    return h1 + (h2 << 16) + (h3 << 32)
+end
+
 local flags_repr = function(flags)
     local t = {}
     for k, v in pairs(flags) do
@@ -58,7 +63,7 @@ end
 
 local _page_header = function(raw, offset)
     local r, pad, mp_flags = {}
-    r.p_pgno, pad, mp_flags, offset = string.unpack("<!8I8c2I2", raw, offset)
+    r.mp_pgno, pad, mp_flags, offset = string.unpack("<!8I8c2I2", raw, offset)
     r.mp_flags = _mp_flags(mp_flags)
     if r.mp_flags.OVERFLOW then
         r.pb_pages, offset = string.unpack("<!8I4", raw, offset)
@@ -97,30 +102,46 @@ local _mp_ptrs = function(raw, count, offset)
     return r, offset
 end
 
-local _node = function(raw, offset)
+local _leaf_node = function(raw, offset)
     local r, mn_flags = {}
     r.mn_lo, r.mn_hi, mn_flags, r.mn_ksize, offset =
         string.unpack("<!8I2I2I2I2", raw, offset)
     r.mn_flags = _mn_flags(mn_flags)
-    r.data = {}
-    r.data.k = raw:sub(offset, offset + r.mn_ksize - 1)
+    r.k = raw:sub(offset, offset + r.mn_ksize - 1)
     offset = offset + r.mn_ksize
-    r.data.mv_size = NODESZ(r)
+    r.mv_size = NODESZ(r)
     if r.mn_flags.BIGDATA then
         -- NOTE: this read is *not* aligned
-        r.data.overflow_pgno, offset = string.unpack("<I8", raw, offset)
+        r.overflow_pgno, offset = string.unpack("<I8", raw, offset)
     else
-        r.data.v = raw:sub(offset, offset + r.data.mv_size - 1)
+        r.v = raw:sub(offset, offset + r.mv_size - 1)
     end
     return r
 end
 
-local _leaf = function(page, raw, base)
+local _branch_node = function(raw, offset)
+    local r, h1, h2, h3 = {}
+    h1, h2, h3, r.mn_ksize, offset = string.unpack("<!8I2I2I2I2", raw, offset)
+    r.mp_pgno = NODEPGNO(h1, h2, h3)
+    r.k = raw:sub(offset, offset + r.mn_ksize - 1)
+    offset = offset + r.mn_ksize
+    return r
+end
+
+local _leaf_nodes = function(page, raw, base)
     local r = {}
-    r.mp_ptrs = _mp_ptrs(raw, NUMKEYS(page), base + PAGEHDRSZ)
-    r.nodes = {}
-    for i=1,#r.mp_ptrs do
-        r.nodes[i] = _node(raw, base + r.mp_ptrs[i])
+    local mp_ptrs = _mp_ptrs(raw, NUMKEYS(page), base + PAGEHDRSZ)
+    for i=1,#mp_ptrs do
+        r[i] = _leaf_node(raw, base + mp_ptrs[i])
+    end
+    return r
+end
+
+local _branch_nodes = function(page, raw, base)
+    local r = {}
+    local mp_ptrs = _mp_ptrs(raw, NUMKEYS(page), base + PAGEHDRSZ)
+    for i=1,#mp_ptrs do
+        r[i] = _branch_node(raw, base + mp_ptrs[i])
     end
     return r
 end
@@ -131,11 +152,13 @@ local _page = function(raw, offset)
     if r.header.mp_flags.META then
         r.meta = _meta(raw, base)
     elseif r.header.mp_flags.LEAF then
-        r.leaf = _leaf(r, raw, base)
+        -- TODO check LEAF2 and SUBP
+        r.nodes = _leaf_nodes(r, raw, base)
     elseif r.header.mp_flags.OVERFLOW then
         -- nothing
+    elseif r.header.mp_flags.BRANCH then
+        r.nodes = _branch_nodes(r, raw, base)
     else
-        -- TODO
         return nil, fmt("unknown page type: %s", flags_repr(r.header.mp_flags))
     end
     return r

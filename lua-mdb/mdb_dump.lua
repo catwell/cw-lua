@@ -1,21 +1,6 @@
 local reader = require "lua-mdb.reader"
 local to_hex = assert((require "cwbase").to_hex)
-local fmt = string.format
-
-local sorted_pairs = function(t)
-    local idx, i = {}, 0
-    for k in pairs(t) do
-        i = i + 1
-        idx[i] = k
-    end
-    table.sort(idx)
-    i = 0
-    local f = function(t, _)
-        i = i + 1
-        return idx[i], t[idx[i]]
-    end
-    return f, t, nil
-end
+local sorted_pairs = (require "lua-mdb.util").sorted_pairs
 
 local r = reader.new(arg[1] .. "/data.mdb")
 local mp = r:pick_meta_page()
