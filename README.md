@@ -45,6 +45,8 @@ Not really tools, but rather small examples of how to do some things.
 - unix: luaposix sample code (and C counterparts)
 - tcpchat: simple TCP chat + Lua interpreter with LuaSocket
 - git: toy implementation of parts of Git
+- mirrorfs: a FUSE filesystem that mirrors a directory
+  (uses [Flu](http://piratery.net/flu))
 
 ## Graduated
 
