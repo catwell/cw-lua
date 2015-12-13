@@ -76,6 +76,10 @@ local set_handler = function(self, name, handler)
     end
 end
 
+local unset_handler = function(self, name)
+    self.fs[name] = nil
+end
+
 local main = function(self)
     assert(self.name, "name is unset")
     assert(self.mountpoint, "mountpoint is unset")
@@ -90,6 +94,7 @@ local methods = {
     push_descriptor = push_descriptor,
     clear_descriptor = clear_descriptor,
     set_handler = set_handler,
+    unset_handler = unset_handler,
     main = main,
 }
 
@@ -252,4 +257,5 @@ return {
     modestr = _modestr,
     check = check,
     pcheck = pcheck,
+    def = def,
 }
