@@ -45,6 +45,7 @@ local get_descriptor = function(self, i, offset)
         error(flu.errno.EINVAL, 2)
     end
     if offset then
+        offset = math.floor(offset)
         if not d.offset then error(error.EINVAL, 2) end
         if d.offset ~= offset then
             pcheck(posix.lseek(d.fd, offset, posix.SEEK_SET))
