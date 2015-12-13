@@ -2,6 +2,15 @@ local flu = require "flu"
 local posix = require "posix"
 local fmt = string.format
 
+local SCRIPT_NAME = arg[0]
+
+local usage = function()
+    io.stderr:write(fmt(
+        "USAGE: %s /absolute/path/to/source mountpoint\n", SCRIPT_NAME
+    ))
+    os.exit(1)
+end
+
 local log = function(...)
     local f = assert(io.open("/tmp/mirrorfs.log", "ab"))
     f:write(fmt(...))
@@ -54,7 +63,9 @@ local _modestr = function(mode)
 end
 
 local root = ...
-assert(root and root:sub(1,1) == "/")
+if not (root and root:sub(1,1) == "/") then
+    usage()
+end
 
 --------------------------------
 
@@ -197,4 +208,5 @@ for k, v in pairs(fs) do
 end
 
 local args = {"mirrorfs", select(2, ...)}
+if #args < 2 then usage() end
 flu.main(args, fs)
