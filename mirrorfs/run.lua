@@ -16,4 +16,5 @@ if not (root and mountpoint and root:sub(1,1) == "/") then
 end
 
 local fs = mirrorfs.new(root, mountpoint)
+fs.logfile = "/tmp/mirrorfs.log"
 fs:main()

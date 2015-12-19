@@ -4,14 +4,31 @@ local fmt = string.format
 
 --- helpers
 
+local POSIX_ERRNO = {}
+for k,v in pairs(posix) do
+    if type(k) == "string" and type(v) == "number" and k:sub(1,1) == "E" then
+        POSIX_ERRNO[v] = k
+    end
+end
+for i=1,32 do assert(POSIX_ERRNO[i]) end
+
+local fail = function(err)
+    if type(err) == "string" then
+        err = flu.errno[err] or err
+    elseif type(err) == "number" then
+        err = flu.errno[POSIX_ERRNO[err]] or err
+    end
+    error(err, 0)
+end
+
 local check = function(...)
     local value, err = ...
-    if not value then error(err, 2) end
+    if not value then fail(err) end
     return ...
 end
 
 local pcheck = function(r, e_msg, e_code)
-    if not r then error(e_code, 2) end
+    if not r then fail(e_code) end
     return r
 end
 
@@ -33,6 +50,7 @@ end
 --- methods
 
 local log = function(self, ...)
+    if not self.logfile then return end
     local f = assert(io.open(self.logfile, "ab"))
     f:write(fmt(...))
     f:write("\n")
@@ -41,12 +59,10 @@ end
 
 local get_descriptor = function(self, i, offset)
     local d = self.descriptors[i]
-    if i == 0 or not d then
-        error(flu.errno.EINVAL, 2)
-    end
+    check(i ~= 0 and d, "EINVAL")
     if offset then
         offset = math.floor(offset)
-        if not d.offset then error(error.EINVAL, 2) end
+        check(d.offset, "EINVAL")
         if d.offset ~= offset then
             pcheck(posix.lseek(d.fd, offset, posix.SEEK_SET))
             d.offset = offset
@@ -71,7 +87,7 @@ local set_handler = function(self, name, handler)
         local ok, r = pcall(handler, self, self.root .. path, ...)
         if not ok then
             self:log("ERROR: %s", tostring(r))
-            error(r, 2)
+            error(type(r) == "userdata" and r or flu.errno.EPERM, 0)
         end
         return r
     end
@@ -105,7 +121,7 @@ local def = {}
 
 def.getattr = function(self, path)
     local st = posix.lstat(path)
-    check(st, flu.errno.ENOENT)
+    check(st, "ENOENT")
     local r = {
         dev = st.st_dev,
         ino = st.st_ino,
@@ -160,7 +176,7 @@ def.opendir = function(self, path, fi)
 end
 
 def.releasedir = function(self, path, fi)
-    check(fi.fh ~= 0, flu.errno.EINVAL)
+    check(fi.fh ~= 0, "EINVAL")
     self:clear_descriptor(fi.fh)
 end
 
@@ -232,7 +248,6 @@ local _mt = {
 local new_empty = function(root, mountpoint)
     local self = {
         name = "mirrorfs",
-        logfile = "/tmp/mirrorfs.log",
         descriptors = {},
         last_descriptor = 0,
         fs = {},
@@ -256,7 +271,8 @@ return {
     new = new,
     new_empty = new_empty,
     modestr = _modestr,
+    fail = fail,
     check = check,
     pcheck = pcheck,
-    def = def,
+    default_handlers = def,
 }
