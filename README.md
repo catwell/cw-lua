@@ -54,3 +54,5 @@ Not really tools, but rather small examples of how to do some things.
 a Redis mock (same interface as redis-lua).
 - [iris](https://github.com/catwell/iris-lua):
 an [Iris](http://iris.karalabe.com/) client.
+- [mirrorfs](https://github.com/catwell/lua-mirrorfs):
+a FUSE mirroring a directory.
