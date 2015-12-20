@@ -4,19 +4,19 @@ local fmt = string.format
 
 --- helpers
 
-local POSIX_ERRNO = {}
+local P_ERRNO = {}
 for k,v in pairs(posix) do
     if type(k) == "string" and type(v) == "number" and k:sub(1,1) == "E" then
-        POSIX_ERRNO[v] = k
+        P_ERRNO[v] = k
     end
 end
-for i=1,32 do assert(POSIX_ERRNO[i]) end
+for i=1,32 do assert(P_ERRNO[i]) end
 
 local fail = function(err)
     if type(err) == "string" then
         err = flu.errno[err] or err
     elseif type(err) == "number" then
-        err = flu.errno[POSIX_ERRNO[err]] or err
+        err = flu.errno[P_ERRNO[err]] or flu.errno[P_ERRNO[-err]] or err
     end
     error(err, 0)
 end
