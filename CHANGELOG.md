@@ -8,3 +8,4 @@
 
 - `mirrorfs.fail` supports negative POSIX error codes.
 - Fixes `utimens`.
+- Supports `chown`.

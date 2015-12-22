@@ -228,6 +228,10 @@ def.chmod = function(self, path, mode)
     pcheck(posix.chmod(path, _modestr(mode)))
 end
 
+def.chown = function(self, path, uid, gid)
+    pcheck(posix.chown(path, uid, gid))
+end
+
 def.utimens = function(self, path, access, modification)
     pcheck(posix.utime(
         path, modification and modification.sec, access and access.sec

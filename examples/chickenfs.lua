@@ -16,7 +16,7 @@ local fs = mirrorfs.new(root, mountpoint)
 -- disable writes
 
 local write_handlers = {
-    "mkdir", "rmdir", "create", "unlink", "write", "chmod", "utimens"
+    "mkdir", "rmdir", "create", "unlink", "write", "chmod", "chown", "utimens"
 }
 for _, x in ipairs(write_handlers) do fs:unset_handler(x) end
 
