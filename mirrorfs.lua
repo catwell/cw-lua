@@ -229,7 +229,9 @@ def.chmod = function(self, path, mode)
 end
 
 def.utimens = function(self, path, access, modification)
-    pcheck(posix.utime(path, modification, access))
+    pcheck(posix.utime(
+        path, modification and modification.sec, access and access.sec
+    ))
 end
 
 --- constructor
