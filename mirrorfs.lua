@@ -27,7 +27,7 @@ local check = function(...)
     return ...
 end
 
-local pcheck = function(r, e_msg, e_code)
+local pcheck = function(r, _, e_code)
     if not r then fail(e_code) end
     return r
 end
@@ -136,9 +136,6 @@ def.getattr = function(self, path)
         blocks = st.st_blocks,
         blksize = st.st_blksize,
     }
-    local _md = function(s)
-        return (st.st_mode & posix[s]) ~= 0
-    end
     r.mode = {}
     local _md1 = function(t)
         for i=1, #t do
