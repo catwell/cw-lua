@@ -13,6 +13,7 @@ Me playing with something. Will move to another category soon,
 most probably "unmaintained".
 
 - lua-mdb: pure Lua code to read LMDB databases
+- etpan: WIP [libetpan](http://www.etpan.org/libetpan.html) binding
 
 ## Maintained (somewhat)
 
