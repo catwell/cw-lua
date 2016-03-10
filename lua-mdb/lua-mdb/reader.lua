@@ -8,7 +8,7 @@ local e_str = function(e)
 end
 
 local dbg = function(self, ...)
-    if self.DEBUG then print(fmt(...)) end
+    if self.DEBUG then io.stderr:write(fmt(...) .. "\n") end
 end
 
 local err = function(self, e)
@@ -175,7 +175,7 @@ end
 local methods = {
     dump = dump,
     get = get,
-    -- below: for debug onlu (consider private)
+    -- below: for debug only (consider private)
     pick_meta_page = pick_meta_page,
     raw_page = raw_page,
     page = page,
@@ -205,7 +205,7 @@ local new = function(path, _opts)
     local r = {
         path = path,
         PAGESIZE = PAGESIZE,
-        DEBUG = false,
+        DEBUG = opts.DEBUG or false,
         parser = mdb_parser.new({bits = opts.bits}),
     }
     return setmetatable(r, {__index = methods})
