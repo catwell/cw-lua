@@ -52,6 +52,7 @@ local page = function(self, n)
     assert(type(n) == "number" and n >= 0)
     local raw, e = raw_page(self, n)
     if not raw then return self:err(e) end
+    self:dbg("parsing page %d", n)
     local r, e = self.parser:page(raw)
     if not r then
         e = fmt("while parsing page %d: %s", n, e_str(e))
