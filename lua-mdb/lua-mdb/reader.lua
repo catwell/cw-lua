@@ -1,4 +1,4 @@
-local parser = require "lua-mdb.parser"
+local mdb_parser = require "lua-mdb.parser"
 local fmt = string.format
 
 local PAGESIZE = 4096
@@ -52,7 +52,7 @@ local page = function(self, n)
     assert(type(n) == "number" and n >= 0)
     local raw, e = raw_page(self, n)
     if not raw then return self:err(e) end
-    local r, e = parser.page(raw)
+    local r, e = self.parser:page(raw)
     if not r then
         e = fmt("while parsing page %d: %s", n, e_str(e))
     end
@@ -66,7 +66,10 @@ local pick_meta_page = function(self)
     end
     local n = m[2].meta.mm_txnid > m[1].meta.mm_txnid and 2 or 1
     self:dbg("picked meta page %d", n - 1)
-    return m[n]
+    local r = m[n]
+    assert(r.meta.mm_magic == 0xBEEFC0DE)
+    assert(r.meta.mm_version == 1 or r.meta.mm_version == 999)
+    return r
 end
 
 -- returns the ID of the first node >= key or nil
@@ -100,7 +103,7 @@ local leaf_value = function(self, node)
     if node.mn_flags.BIGDATA then
         local v, e = raw_data(
             self,
-            node.overflow_pgno * PAGESIZE + parser.PAGEHDRSZ,
+            node.overflow_pgno * PAGESIZE + self.parser:PAGEHDRSZ(),
             node.mv_size
         )
         if not v then return self:err(e) end
@@ -125,7 +128,8 @@ local get = function(self, k)
     local meta, e = pick_meta_page(self)
     if not meta then return self:err(e) end
     local root_page_num = meta.meta.mm_dbs.main.md_root
-    if root_page_num < 0 then return nil end
+    if root_page_num == self.parser:P_INVALID() then return nil end
+    assert(root_page_num >= 0)
     local p, e = page(self, meta.meta.mm_dbs.main.md_root)
     if not p then return self:err(e) end
     while is_branch(p) do
@@ -161,24 +165,49 @@ local dump = function(self)
     local meta, e = pick_meta_page(self)
     if not meta then return self:err(e) end
     local root_page_num = meta.meta.mm_dbs.main.md_root
-    if root_page_num < 0 then return {} end
+    if root_page_num == self.parser:P_INVALID() then return {} end
+    assert(root_page_num >= 0)
     local root_page, e = page(self, meta.meta.mm_dbs.main.md_root)
     if not root_page then return self:err(e) end
     return _dump(self, root_page)
 end
 
 local methods = {
-    pick_meta_page = pick_meta_page,
     dump = dump,
     get = get,
+    -- below: for debug onlu (consider private)
+    pick_meta_page = pick_meta_page,
+    raw_page = raw_page,
+    page = page,
     dbg = dbg,
     err = err,
     res = res,
 }
 
-local new = function(path)
+local autodetect_bits = function()
+    -- This parses the Lua 5.3 bytecode header to get the size of size_t.
+    -- See ldump.c in the Lua source code.
+    local s = string.dump(function() end)
+    assert(s:sub(1,12) == "\x1bLua\x53\x00\x19\x93\r\n\x1a\n")
+    return 8 * s:byte(14)
+end
+
+local new = function(path, _opts)
     assert(type(path) == "string")
-    local r = {path = path, PAGESIZE = PAGESIZE, DEBUG = false}
+
+    local opts = {}
+    if _opts then
+        for k, v in pairs(_opts) do opts[k] = v end
+    end
+    if not opts.bits then opts.bits = autodetect_bits() end
+    assert(opts.bits == 32 or opts.bits == 64)
+
+    local r = {
+        path = path,
+        PAGESIZE = PAGESIZE,
+        DEBUG = false,
+        parser = mdb_parser.new({bits = opts.bits}),
+    }
     return setmetatable(r, {__index = methods})
 end
 
