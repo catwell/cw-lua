@@ -5,6 +5,9 @@
 cwbase can convert any numeric base to and from big integers. This means
 it can be used to convert any base to another base as well.
 
+This code is deprecated in favor of my pure Lua module,
+[base2base](https://github.com/catwell/base2base).
+
 ## Dependencies
 
 You need a bignum library. If you do not provide one, cwbase will use
