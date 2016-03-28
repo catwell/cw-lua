@@ -16,8 +16,8 @@ iatax is a LÖVE remake of [an old Perl game of mine](http://www.iatax.sf.net).
 ## TODO
 
 -[x] add a .luacheckrc
--[ ] home screen with logo and color selection
--[ ] do not quit on game end
+-[x] home screen with logo and color selection
+-[x] do not quit on game end
 -[ ] Android support
 
 ## Copyright

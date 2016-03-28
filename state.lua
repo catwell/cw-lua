@@ -93,7 +93,12 @@ local mt = { __index = {
 
 local new = function()
     local self = {{}, {}, {}, {}, {}, {}, {}}
-    return setmetatable(self, mt)
+    setmetatable(self, mt)
+    self:set(PAWN.WHITE, 1, 7)
+    self:set(PAWN.WHITE, 7, 1)
+    self:set(PAWN.BLACK, 1, 1)
+    self:set(PAWN.BLACK, 7, 7)
+    return self
 end
 
 return {

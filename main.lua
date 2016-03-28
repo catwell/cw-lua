@@ -1,4 +1,3 @@
-local fmt = string.format
 local unpack = table.unpack or unpack
 
 local util = require "util"
@@ -8,13 +7,15 @@ local distance = util.distance
 local PAWN = util.PAWN
 
 local COLOR = {
-    BACKGROUND = { 0, 0, 0, 0 },
+    BACKGROUND = { 128, 128, 128, 0 },
     BORDER = { 215, 215, 215, 255 },
     TILE = { 132, 158, 198, 255 },
     BLACK = { 0, 0, 0, 255 },
     WHITE = { 255, 255, 255, 255 },
     SELECTION = { 255, 0, 0, 255 },
 }
+
+local SCREEN = {home = {}, game = {}}
 
 local reset_dimensions = function(self)
     local width, height = love.graphics.getDimensions()
@@ -89,7 +90,6 @@ local draw_selected = function(self, x, y)
         self.tile_size, self.tile_size,
         self.selection_radius, self.selection_radius
     )
-
 end
 
 local draw_empty = function(self)
@@ -142,15 +142,22 @@ local game_winner = function(self)
         return PAWN.BLACK
     elseif b == 0 then
         return PAWN.WHITE
+    elseif w + b == 7 * 7 then
+        return w > b and PAWN.WHITE or PAWN.BLACK
     end
 end
 
 local game_check_winner = function(self)
     local winner = self:winner()
     if winner then
-        print(fmt("%s won", PAWN[winner]))
-        os.exit(1)
+        if winner == self.PLAYER then
+            SCREEN.home.text = "You won. New game?"
+        else
+            SCREEN.home.text = "You lost. New game?"
+        end
+        self.screen = SCREEN.home
     end
+    return winner
 end
 
 local game_play_ai = function(self)
@@ -158,8 +165,16 @@ local game_play_ai = function(self)
     self.state:play(self.OPPONENT, move.from, move.to)
 end
 
+local game_set_player = function(self, color)
+    self.PLAYER = color
+    self.OPPONENT = util.opponent(color)
+    self.ai = (require "ai").new(self.OPPONENT)
+    self.state = (require "state").new()
+    self.allow_input = true
+    self.selected = nil
+end
+
 local GAME = {
-    state = (require "state").new(),
     board = BOARD,
     set = game_set,
     get = game_get,
@@ -168,14 +183,24 @@ local GAME = {
     winner = game_winner,
     check_winner = game_check_winner,
     play_ai = game_play_ai,
-    PLAYER = PAWN.WHITE,
-    OPPONENT = PAWN.BLACK,
+    set_player = game_set_player,
 }
 
 ---
 
-love.mousepressed = function(x, y, button, is_touch)
-    if not GAME.current_player then return end
+SCREEN.game.load = function(self)
+    BOARD:reset_dimensions()
+    assert(not BOARD.top_small)
+end
+
+SCREEN.game.draw = function(self)
+    BOARD:draw_empty()
+    GAME:draw_pawns()
+    GAME:draw_selected()
+end
+
+SCREEN.game.mousepressed = function(self, x, y, ...)
+    if not GAME.allow_input then return end
     local tile = BOARD:tile_hit(x, y)
     if not tile then return end
     local color = GAME:get(tile)
@@ -188,33 +213,107 @@ love.mousepressed = function(x, y, button, is_touch)
     elseif GAME.selected and not color then
         local d = distance(GAME.selected, tile)
         if d <= 2 then
-            GAME.current_player = false
+            GAME.allow_input = false
             GAME.state:play(GAME.PLAYER, GAME.selected, tile)
             GAME.selected = nil
-            GAME:check_winner()
+            if GAME:check_winner() then return end
             if GAME.state:can_play(GAME.OPPONENT) then repeat
                 GAME:play_ai()
-                GAME:check_winner()
+                if GAME:check_winner() then return end
             until GAME.state:can_play(GAME.PLAYER) end
-            GAME.current_player = true
+            GAME.allow_input = true
         end
     end
 end
 
+SCREEN.home.load = function(self)
+    self.logo = love.graphics.newImage("iatax_logo.png")
+    self.font = love.graphics.newFont(200)
+    local fh = self.font:getHeight()
+    local iw, ih = self.logo:getDimensions()
+    local sw, sh = love.graphics.getDimensions()
+    self.scale_factor = 0.4 * math.min(sw/iw, sh/ih)
+    self.logo_pos = { x = math.floor(0.3 * sw), y = math.floor(0.1 * sh)}
+    local hh = math.ceil(0.1 * sh + self.scale_factor * ih)
+    local bottom_h = sh - hh
+    self.txt_h, self.txt_top = math.floor(0.3 * bottom_h), hh
+    local fw = self.font:getWidth("You lost. New game?")
+    self.txt_font_scale_factor = math.min(0.8 * sw / fw, self.txt_h * fh)
+    local bh = math.floor(0.6 * (bottom_h - self.txt_h))
+    self.btn_top = hh + self.txt_h + math.floor(bh / 3)
+    self.btn_w, self.btn_h = math.floor(0.35 * sw), bh
+    self.btn1_x = math.floor(0.1 * sw)
+    self.btn2_x = 2 * self.btn1_x + self.btn_w
+    self.btn_radius = math.floor(0.2 * bh)
+    fw = math.max(
+        self.font:getWidth("Play White"),
+        self.font:getWidth("Play Black")
+    )
+    self.btn_font_scale_factor = 0.8 * self.btn_w / fw
+    local bfh = fh * self.btn_font_scale_factor
+    self.btn_font_top = math.floor(self.btn_top + (bh - bfh) / 2)
+    self.btn_font_offset = math.floor(0.1 * self.btn_w)
+    self.text = "New game?"
+end
+
+SCREEN.home.draw = function(self)
+    love.graphics.setColor(COLOR.WHITE)
+    love.graphics.draw(
+        self.logo, self.logo_pos.x, self.logo_pos.y,
+        0, self.scale_factor, self.scale_factor
+    )
+    love.graphics.rectangle(
+        "fill",
+        self.btn1_x, self.btn_top,
+        self.btn_w, self.btn_h,
+        self.btn_radius, self.btn_radius
+    )
+    love.graphics.rectangle(
+        "fill",
+        self.btn2_x, self.btn_top,
+        self.btn_w, self.btn_h,
+        self.btn_radius, self.btn_radius
+    )
+    love.graphics.setColor(COLOR.BLACK)
+    love.graphics.setFont(self.font)
+    local sw = love.graphics.getDimensions()
+    local tw, tf = self.font:getWidth(self.text), self.txt_font_scale_factor
+    local txt_hpad = (self.txt_h - tf * self.font:getHeight()) / 2
+    love.graphics.print(
+        self.text, (sw - tf * tw) / 2, self.txt_top + txt_hpad,
+        0, tf, tf
+    )
+    love.graphics.print(
+        "Play White", self.btn1_x + self.btn_font_offset, self.btn_font_top,
+        0, self.btn_font_scale_factor, self.btn_font_scale_factor
+    )
+    love.graphics.print(
+        "Play Black", self.btn2_x + self.btn_font_offset, self.btn_font_top,
+        0, self.btn_font_scale_factor, self.btn_font_scale_factor
+    )
+end
+
+SCREEN.home.mousepressed = function(self, x, y, ...)
+    if y < self.btn_top or y > self.btn_top + self.btn_h then return end
+    if x >= self.btn1_x and x <= self.btn1_x + self.btn_w then
+        GAME:set_player(PAWN.WHITE)
+    elseif x >= self.btn2_x and x <= self.btn2_x + self.btn_w then
+        GAME:set_player(PAWN.BLACK)
+    else return end
+    GAME.screen = SCREEN.game
+end
+
+love.mousepressed = function(x, y, ...)
+    GAME.screen:mousepressed(x, y, ...)
+end
+
 love.load = function()
-    BOARD:reset_dimensions()
-    assert(not BOARD.top_small)
-    GAME:set(PAWN.WHITE, 1, 7)
-    GAME:set(PAWN.WHITE, 7, 1)
-    GAME:set(PAWN.BLACK, 1, 1)
-    GAME:set(PAWN.BLACK, 7, 7)
-    GAME.ai = (require "ai").new(GAME.OPPONENT)
-    GAME.current_player = true
+    SCREEN.home:load()
+    SCREEN.game:load()
+    GAME.screen = SCREEN.home
 end
 
 love.draw = function()
     love.graphics.clear(COLOR.BACKGROUND)
-    BOARD:draw_empty()
-    GAME:draw_pawns()
-    GAME:draw_selected()
+    GAME.screen:draw()
 end
