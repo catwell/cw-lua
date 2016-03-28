@@ -20,10 +20,10 @@ run:
 
 ## TODO
 
--[x] add a .luacheckrc
--[x] home screen with logo and color selection
--[x] do not quit on game end
--[ ] Android support
+- [x] add a .luacheckrc
+- [x] home screen with logo and color selection
+- [x] do not quit on game end
+- [ ] Android support
 
 ## Copyright
 
