@@ -13,6 +13,11 @@ iatax is a LÖVE remake of [an old Perl game of mine](http://www.iatax.sf.net).
 
     love .
 
+To create a .love file that can be run on other platforms such as Android,
+run:
+
+    zip iatax.love *.lua *.png
+
 ## TODO
 
 -[x] add a .luacheckrc
