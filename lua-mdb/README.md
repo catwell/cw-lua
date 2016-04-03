@@ -13,9 +13,6 @@ This code is more a way for me to learn the internals of LMDB than anything
 practical. Long term, it could be useful to debug broken .mdb files or read
 them on another architecture (the MDB format is architecture-dependent).
 
-Currently, do not expect this to work with non-default settings or with
-MDB files that were not generated on an x64 architecture.
-
 ## Dependencies
 
 Exclusively supports Lua 5.3. I have no interest in supporting older Lua-s
@@ -28,7 +25,18 @@ and [Penlight](https://github.com/stevedonovan/Penlight).
 
 ## Usage
 
-Coming later.
+### mdb_dump.lua
+
+`mdb_dump.lua` is a re-implementation of the mdb_dump tool from LMDB. It can
+be used as an example of how to use the library. You can pass the number of
+bits of the platform on which the database was generated as the second argument,
+otherwise it will try to use the platform the code runs on.
+
+### The library
+
+    local reader = require "lua-mdb.reader"
+    local r = reader.new("path/to/data.mdb")
+    print(r:get("some_key"))
 
 ## Copyright
 
