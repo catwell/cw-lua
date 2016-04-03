@@ -1,5 +1,5 @@
 local reader = require "lua-mdb.reader"
-local to_hex = assert((require "cwbase").to_hex)
+local to_hex = assert((require "base2base").to_hex)
 local sorted_pairs = (require "lua-mdb.util").sorted_pairs
 local fmt = string.format
 
