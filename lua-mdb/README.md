@@ -32,4 +32,4 @@ Coming later.
 
 ## Copyright
 
-- Copyright (c) 2015 Pierre Chapuis
+- Copyright (c) 2015-2016 Pierre Chapuis
