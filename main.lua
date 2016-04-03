@@ -1,4 +1,5 @@
 local unpack = table.unpack or unpack
+local fmt = string.format
 
 local util = require "util"
 local all_tiles = util.all_tiles
@@ -150,10 +151,12 @@ end
 local game_check_winner = function(self)
     local winner = self:winner()
     if winner then
+        local w, b = self.state:pawn_counts()
+        local s, l = math.min(w, b), math.max(w, b)
         if winner == self.PLAYER then
-            SCREEN.home.text = "You won. New game?"
+            SCREEN.home.text = fmt("You won (%d / %d). New game?", l, s)
         else
-            SCREEN.home.text = "You lost. New game?"
+            SCREEN.home.text = fmt("You lost (%d / %d). New game?", s, l)
         end
         self.screen = SCREEN.home
     end
@@ -237,7 +240,7 @@ SCREEN.home.load = function(self)
     local hh = math.ceil(0.1 * sh + self.scale_factor * ih)
     local bottom_h = sh - hh
     self.txt_h, self.txt_top = math.floor(0.3 * bottom_h), hh
-    local fw = self.font:getWidth("You lost. New game?")
+    local fw = self.font:getWidth("You lost (00/00). New game?")
     self.txt_font_scale_factor = math.min(0.8 * sw / fw, self.txt_h * fh)
     local bh = math.floor(0.6 * (bottom_h - self.txt_h))
     self.btn_top = hh + self.txt_h + math.floor(bh / 3)
