@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="info.catwell.iatax"
+      android:versionCode="20"
+      android:versionName="0.10.1-iatax-v0.1"
+      android:installLocation="auto" xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- Allow writing to external storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <application
+      android:allowBackup="true"
+      android:icon="@drawable/love"
+      android:label="iatax"
+      android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+      <service android:name=".DownloadService" />
+      <activity
+        android:name="IataxActivity"
+        android:configChanges="orientation|screenSize"
+        android:label="iatax"
+        android:launchMode="singleTop"
+        android:screenOrientation="landscape" >
+        <intent-filter>
+          <action android:name="android.intent.action.MAIN" />
+          <category android:name="android.intent.category.LAUNCHER" />
+          <category android:name="tv.ouya.intent.category.GAME"/>
+        </intent-filter>
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <data android:scheme="file" />
+          <data android:scheme="content" />
+          <data android:mimeType="application/x-love-game" />
+        </intent-filter>
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <data android:scheme="file" />
+          <data android:mimeType="*/*" />
+          <data android:pathPattern=".*\\.love" />
+          <data android:host="*" />
+        </intent-filter>
+      </activity>
+      <activity
+        android:name="DownloadActivity"
+        android:noHistory="true" >
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data android:scheme="http"
+            android:host="*"
+            android:pathPrefix="*"
+            android:mimeType="*/*"
+            android:pathPattern=".*\\.love" />
+          <data android:scheme="https"
+            android:host="*"
+            android:pathPrefix="*"
+            android:mimeType="*/*"
+            android:pathPattern=".*\\.love" />
+        </intent-filter>
+      </activity>
+    </application>
+
+    <!-- Android 2.3.3 -->
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="18" />
+
+    <!-- OpenGL ES 2.0 -->
+    <uses-feature android:glEsVersion="0x00020000" />
+</manifest>
