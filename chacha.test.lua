@@ -1,6 +1,6 @@
 if _VERSION ~= "Lua 5.3" then require "compat53" end
 local cwtest = require "cwtest"
-local chacha = require "chacha"
+local fmt = string.format
 
 local T = cwtest.new()
 
@@ -36,36 +36,53 @@ do
     ietf_241_expected = string.char(unpack(t))
 end
 
-T:start("basics"); do
-    local rounds = {8, 12, 20}
-    for i=1, #rounds do
-        local _crypt = function(plaintext)
-            return chacha.ref_crypt(rounds[i], S.key, S.ref_iv, plaintext)
+local modules, chacha = {"chacha"}
+if _VERSION == "Lua 5.3" then
+    modules[#modules+1] = "chacha-pure"
+end
+
+for _, mod in ipairs(modules) do
+    chacha = require(mod)
+
+    T:start(fmt("%s - basics", mod)); do
+        local rounds = {8, 12, 20}
+        for i = 1, #rounds do
+            local _crypt = function(plaintext)
+                return chacha.ref_crypt(rounds[i], S.key, S.ref_iv, plaintext)
+            end
+            T:eq(_crypt(_crypt(S.plaintext)), S.plaintext)
         end
-        T:eq(_crypt(_crypt(S.plaintext)), S.plaintext)
-    end
-end; T:done()
+    end; T:done()
 
-T:start("ChaCha20 RFC7539 2.4.2"); do
-    local c_1 = string.pack("I4", 1)
-    local ciphertext = chacha.ietf_crypt(20, S.key, S.ietf_iv, S.plaintext, c_1)
-    T:eq(ciphertext, ietf_241_expected)
-    T:eq(
-        chacha.ietf_crypt(20, S.key, S.ietf_iv, ciphertext, c_1), S.plaintext
-    )
-end; T:done()
+    T:start(fmt("%s - RFC7539 2.4.2", mod)); do
+        local c_1 = string.pack("I4", 1)
+        local ciphertext = chacha.ietf_crypt(
+            20, S.key, S.ietf_iv, S.plaintext, c_1
+        )
+        T:eq(ciphertext, ietf_241_expected)
+        T:eq(
+            chacha.ietf_crypt(20, S.key, S.ietf_iv, ciphertext, c_1), S.plaintext
+        )
+    end; T:done()
 
-T:start("counter"); do
-    local c_0, c_1 = string.pack("I8", 0), string.pack("I8", 1)
-    local ciphertext_1 = chacha.ref_crypt(20, S.key, S.ref_iv, S.plaintext)
-    local ciphertext_2 = chacha.ref_crypt(20, S.key, S.ref_iv, S.plaintext, c_0)
-    T:eq(ciphertext_2, ciphertext_1)
-    local ciphertext_3 = chacha.ref_crypt(20, S.key, S.ref_iv, S.plaintext, c_1)
-    T:neq(ciphertext_3, ciphertext_1)
-    local b_1 = S.plaintext:sub(64 + 1)
-    local ciphertext_4 = chacha.ref_crypt(20, S.key, S.ref_iv, b_1, c_1)
-    T:eq(ciphertext_4, ciphertext_1:sub(64 + 1))
-end; T:done()
+    T:start(fmt("%s - counter", mod)); do
+        local c_0, c_1 = string.pack("I8", 0), string.pack("I8", 1)
+        local ciphertext_1 = chacha.ref_crypt(
+            20, S.key, S.ref_iv, S.plaintext
+        )
+        local ciphertext_2 = chacha.ref_crypt(
+            20, S.key, S.ref_iv, S.plaintext, c_0
+        )
+        T:eq(ciphertext_2, ciphertext_1)
+        local ciphertext_3 = chacha.ref_crypt(
+            20, S.key, S.ref_iv, S.plaintext, c_1
+        )
+        T:neq(ciphertext_3, ciphertext_1)
+        local b_1 = S.plaintext:sub(64 + 1)
+        local ciphertext_4 = chacha.ref_crypt(20, S.key, S.ref_iv, b_1, c_1)
+        T:eq(ciphertext_4, ciphertext_1:sub(64 + 1))
+    end; T:done()
+
+end
 
 T:exit()
-

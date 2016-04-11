@@ -4,15 +4,17 @@
 
 ## Presentation
 
-This is a Lua C module implementing for the
-[ChaCha stream cipher](http://cr.yp.to/chacha.html).
+This repository contains two implementations of the
+[ChaCha stream cipher](http://cr.yp.to/chacha.html) for Lua: a C module and
+a pure Lua module which implements the same interface.
 
 *WARNING*: ChaCha is *just* a stream cipher, not a complete solution for
 encryption. Do not use this unless you really understand what you are doing.
 
 ## Dependencies
 
-Supports Lua from 5.1 to 5.3 and LuaJIT 2.
+The C module, "chacha", supports Lua from 5.1 to 5.3 and LuaJIT 2.
+The pure module only supports Lua 5.3.
 
 Tests depend on [cwtest](https://github.com/catwell/cwtest).
 Tests on anything else than Lua 5.3 depend on
