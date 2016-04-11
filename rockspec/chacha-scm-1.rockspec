@@ -1,9 +1,7 @@
 package = "chacha"
 version = "scm-1"
 
-source = {
-   url = "git://github.com/catwell/lua-chacha.git",
-}
+source = { url = "git://github.com/catwell/lua-chacha.git" }
 
 description = {
    summary = "ChaCha stream cipher.",
@@ -15,16 +13,10 @@ description = {
    license = "MIT/X11",
 }
 
-dependencies = {
-   "lua >= 5.1",
-}
+dependencies = { "lua >= 5.1" }
 
 build = {
    type = "builtin",
-   modules = {
-      chacha = {
-         sources = {"chacha.c", "lchacha.c"},
-      },
-   },
+   modules = { chacha = { sources = {"chacha.c", "lchacha.c"} } },
    copy_directories = {},
 }

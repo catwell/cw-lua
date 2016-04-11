@@ -16,16 +16,10 @@ description = {
    license = "MIT/X11",
 }
 
-dependencies = {
-   "lua >= 5.3",
-}
+dependencies = { "lua >= 5.1" }
 
 build = {
    type = "builtin",
-   modules = {
-      chacha = {
-         sources = {"chacha.c", "lchacha.c"},
-      },
-   },
+   modules = { chacha = { sources = {"chacha.c", "lchacha.c"} } },
    copy_directories = {},
 }
