@@ -40,7 +40,7 @@ See chacha.test.lua for more.
 
 ## Copyright
 
-- Copyright (c) 2015 Pierre Chapuis
+- Copyright (c) 2015 - 2016 Pierre Chapuis
 
 The original ChaCha implementation was released under the Public Domain
 by D.J. Bernstein.
