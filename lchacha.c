@@ -23,7 +23,7 @@ static int chacha_generic_crypt(lua_State *L, bool is_ietf)
     int rounds = luaL_checkinteger(L, 1);
 
     /* IETF only normalizes ChaCha 20. */
-    if (rounds != 20 && (is_ietf || (rounds != 8 && rounds != 12)))
+    if (rounds != 20 && (is_ietf || (rounds % 2 != 0)))
         return luaL_error(L, "invalid number of rounds: %d", rounds);
 
     luaL_checktype(L, 2, LUA_TSTRING);

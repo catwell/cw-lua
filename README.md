@@ -34,7 +34,7 @@ They both have the same interface:
 present.
 
 `ref_crypt` corresponds to the original ChaCha algorithm by D.J. Bernstein.
-`rounds` can be one of 20, 12 or 8; `key` can be 16 or 32 bytes
+`rounds` must be a multiple of 2; `key` can be 16 or 32 bytes
 (128 or 256 bits); `IV` must be 8 bytes (64 bits) and the optional argument
 `counter` must be 8 bytes (64 bits) if present.
 

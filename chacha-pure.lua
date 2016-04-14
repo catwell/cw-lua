@@ -104,7 +104,7 @@ local _crypt = function(ietf, rounds, key, iv, plaintext, counter)
 end
 
 local ref_crypt = function(rounds, key, iv, plaintext, counter)
-    assert((rounds == 20 or rounds == 12 or rounds == 8) and #iv == 8)
+    assert((rounds % 2 == 0) and #iv == 8)
     return _crypt(false, rounds, key, iv, plaintext, counter)
 end
 
