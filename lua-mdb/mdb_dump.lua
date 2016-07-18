@@ -11,7 +11,7 @@ local r = reader.new(
     }
 )
 
-local mp = r:pick_meta_page()
+local mp = assert(r:pick_meta_page())
 
 print("VERSION=3")
 print("format=bytevalue")
