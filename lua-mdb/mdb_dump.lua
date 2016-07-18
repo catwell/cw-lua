@@ -21,7 +21,7 @@ print("maxreaders=126")
 print("db_pagesize=4096")
 print("HEADER=END")
 
-local t = assert(r:dump())
+local t = assert(r:dump {check_cycles = true})
 
 for k, v in sorted_pairs(t) do
     print(" " .. to_hex(k))

@@ -42,10 +42,12 @@ end
 
 local T = cwtest.new()
 
+local dump_args = {check_cycles = true}
+
 T:start("empty"); do
     db_init()
     db_done()
-    T:eq( M.new(db_file):dump(), {} )
+    T:eq( M.new(db_file):dump(dump_args), {} )
     db_clean()
 end; T:done()
 
@@ -58,7 +60,7 @@ T:start("single page"); do
     db.txn:put(db.dbi, "fu", "bar", MDB.NODUPDATA)
     db_done()
     T:eq(
-        M.new(db_file):dump(),
+        M.new(db_file):dump(dump_args),
         { chunky = "bacon", spam = "eggs", fu = "bar" }
     )
     db_clean()
@@ -71,7 +73,7 @@ T:start("large values"); do
     db.txn:put(db.dbi, "k1", v1, MDB.NODUPDATA)
     db.txn:put(db.dbi, "k2", v2, MDB.NODUPDATA)
     db_done()
-    T:eq( assert(M.new(db_file):dump()), { k1 = v1, k2 = v2 } )
+    T:eq( assert(M.new(db_file):dump(dump_args)), { k1 = v1, k2 = v2 } )
     db_clean()
 end; T:done()
 
@@ -84,7 +86,7 @@ T:start("branch pages"); do
         db.txn:put(db.dbi, k, "x", MDB.NODUPDATA)
     end
     db_done()
-    T:eq( assert(M.new(db_file):dump()), t )
+    T:eq( assert(M.new(db_file):dump(dump_args)), t )
     db_clean()
 end; T:done()
 

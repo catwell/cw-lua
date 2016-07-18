@@ -144,33 +144,51 @@ local get = function(self, k)
     return leaf_value(self, p.nodes[i])
 end
 
-local _dump; _dump = function(self, p, t)
+local _dump; _dump = function(self, p, st)
     local q, e, ok
-    if not t then t = {} end
+    if st.trace then
+        local cur = st.trace[#st.trace]
+        for i = 1, #st.trace-1 do
+            if st.trace[i] == cur then
+                error(
+                    "found page cycle, stack: " .. table.concat(st.trace, " ")
+                )
+            end
+        end
+    end
     if is_branch(p) then
         for i=1, #p.nodes do
             q, e = page(self, p.nodes[i].mp_pgno)
             if not q then return self:err(e) end
-            ok, e = _dump(self, q, t)
+            if st.trace then
+                table.insert(st.trace, p.nodes[i].mp_pgno)
+            end
+            ok, e = _dump(self, q, st)
+            if st.trace then
+                table.remove(st.trace)
+            end
             if not ok then return self:err(e) end
         end
     else
         q, e = leaf_content(self, p)
         if not q then return self:err(e) end
-        for k, v in pairs(q) do t[k] = v end
+        for k, v in pairs(q) do st.r[k] = v end
     end
-    return t
+    return st.r
 end
 
-local dump = function(self)
+local dump = function(self, args)
+    local check_cycles = args and args.check_cycles
     local meta, e = pick_meta_page(self)
     if not meta then return self:err(e) end
     local root_page_num = meta.meta.mm_dbs.main.md_root
     if root_page_num == self.parser:P_INVALID() then return {} end
     assert(root_page_num >= 0)
-    local root_page, e = page(self, meta.meta.mm_dbs.main.md_root)
+    local root_page, e = page(self, root_page_num)
     if not root_page then return self:err(e) end
-    return _dump(self, root_page)
+    local trace = check_cycles and {root_page_num} or nil
+    local st = {r = {}, trace = trace}
+    return _dump(self, root_page, st)
 end
 
 local methods = {
