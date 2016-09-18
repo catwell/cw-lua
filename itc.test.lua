@@ -1,3 +1,4 @@
+local unpack = table.unpack
 local base2base = require "base2base"
 local cwtest = require "cwtest"
 

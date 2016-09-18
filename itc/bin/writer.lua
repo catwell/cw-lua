@@ -1,3 +1,5 @@
+local unpack = table.unpack
+
 local function write(self, n, b)
     local sn, sb = self.sn, self.sb + b
     if sb <= 8 then
