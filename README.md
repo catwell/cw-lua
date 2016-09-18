@@ -1,5 +1,7 @@
 # itc.lua
 
+[![Build Status](https://travis-ci.org/catwell/itc.lua.png?branch=master)](https://travis-ci.org/catwell/itc.lua)
+
 ## Presentation
 
 This is a Lua implementation of Interval Tree Clocks, according to

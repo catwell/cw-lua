@@ -1,0 +1,29 @@
+language: c
+
+sudo: false
+
+env:
+  global:
+    - LUAROCKS=2.4.0
+  matrix:
+    - LUA=lua5.3
+
+branches:
+  only:
+    - master
+
+before_install:
+  - source .travis/setenv_lua.sh
+
+install:
+  - luarocks install penlight
+  - luarocks install cwtest
+  - luarocks install base2base
+
+script:
+  - lua itc.test.lua
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
