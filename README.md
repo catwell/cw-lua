@@ -5,7 +5,7 @@
 ## Presentation
 
 This is a Lua implementation of Interval Tree Clocks, according to
-[the paper](http://gsd.di.uminho.pt/members/cbm/ps/itc2008.pdf):
+[the paper](http://haslab.uminho.pt/cbm/files/itc.pdf):
 
     Paulo Sérgio Almeida, Carlos Baquero and Victor Fonte
     Interval Tree Clocks: A Logical Clock for Dynamic Systems
@@ -38,6 +38,13 @@ s2:join(p) -- merge changes (causality), but 1 is still alive
 print(s2:repr()) -- [(0, 1), 1]
 ```
 
+## Other implementations
+
+- [Reference implementations](https://github.com/ricardobcl/Interval-Tree-Clocks)
+  in C, Erlang and Java.
+- [Relativity, a JavaScript implementation](https://github.com/ef4/relativity)
+- [A Python implementation](https://github.com/kurin/py-itc)
+
 ## Copyright
 
-- Copyright (c) 2016 Pierre Chapuis
+- Copyright (c) 2016-2017 Pierre Chapuis
