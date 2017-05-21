@@ -22,6 +22,7 @@ I will at least try to give you an answer. I may update
 some of them.
 
 - sha256: a SHA-256 implementation in pure LuaJIT+FFI.
+- blake2b: a Lua 5.3 implementation of [BLAKE2b](https://blake2.net).
 - crdt: implementation of some Conflict-Free Replicated Data Types in Lua.
 - deque: simple deque implementation (similar to the lists used in fakeredis).
 - bimap: mirrored map implementation.
