@@ -92,7 +92,7 @@ local transform = function(chunk, res) -- works on a 64B chunk
     t1, t2 = w[i-15], w[i-2]
     s0 = bxor( rrot(t1, 07), rrot(t1, 18), rshift(t1, 03) )
     s1 = bxor( rrot(t2, 17), rrot(t2, 19), rshift(t2, 10) )
-    w[i] = w[i-16] + w[i-7] + s0 + s1
+    w[i] = w[i-16] + w[i-7] + s0 + s1 + 0LL -- 32 bit LuaJIT, see issue 1
   end
   for i=0,64-1 do
     s0 = bxor( rrot(a, 02), rrot(a, 13), rrot(a, 22) )
