@@ -5,7 +5,8 @@
 local ffi = require "ffi"
 assert(ffi.abi("le"))
 
-local band, bor, bxor, bnot = bit.band, bit.bor, bit.bxor, bit.bnot
+local bit = require "bit"
+local band, bxor, bnot = bit.band, bit.bxor, bit.bnot
 local rshift, rrot = bit.rshift, bit.ror
 
 local ui32_8 = ffi.typeof("uint32_t[8]")

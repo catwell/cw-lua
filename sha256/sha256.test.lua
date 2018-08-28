@@ -1,4 +1,3 @@
-require "pl.strict"
 local sha256 = require "sha256"
 local TESTFILE = "test.tmp"
 
@@ -7,7 +6,7 @@ local sys_sha256_hex = function(input)
   f:write(input)
   f:close()
   local cmd = string.format("sha256sum %s | cut -d' ' -f1", TESTFILE)
-  local f = assert(io.popen(cmd, "r"))
+  f = assert(io.popen(cmd, "r"))
   local s = assert(f:read("*a"))
   f:close()
   s = s:gsub("[\n\r]+$", "")
@@ -33,7 +32,7 @@ local input = {
 }
 
 local s = "a"
-for i=1, 6 do
+for _=1, 6 do
   s = s .. s .. s .. s .. s
   s = s .. s
 end
@@ -75,9 +74,10 @@ end
 end_test()
 
 printf("fuzzing ")
-for i=1,1000 do
+for _=1,1000 do
   local x = rand_raw(math.random(0, 1000))
   test(x)
 end
 end_test()
+
 os.remove(TESTFILE)
