@@ -2,6 +2,12 @@
 
 This is a sample project showing how to use the [CDN version of Vue](https://vuejs.org/v2/guide/installation.html#CDN) with [fengari-web](https://github.com/fengari-lua/fengari-web) and [LuaCC](https://github.com/mihacooper/luacc).
 
+## Build dependencies
+
+- Lua 5.3
+- bash, curl, grep, sed, tr
+- [luacheck](https://github.com/mpeterv/luacheck)
+
 ## How to use this?
 
 - Edit the Lua source files in `src/` however you like it, as long as you keep a `main.lua` file.
