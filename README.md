@@ -20,7 +20,9 @@ Run `tup` to build once. Run `tup monitor -f -a` to get hot code reloading.
 
 ### Tupfile
 
-All Lua files should be added to `rule_lua` in `Tupfile.lua`. `main.lua` should always be first. This is necessary because Tup does not support recursive globbing.
+All Lua files and temlates must be explicitly listed in `Tupfile.lua`. `main.lua` should always be first. This is necessary because Tup does not support recursive globbing.
+
+You should not need to touch `Tuprules.lua`.
 
 ### Output
 
@@ -28,4 +30,7 @@ Output will be in `dist`. You can use something like [simple-http-server](https:
 
 ## Possible improvements
 
-- Use separate files for templates to get syntax highlighting.
+- Demonstrate sub-components.
+- Demonstrate routing.
+- Demonstrate Web Components usage.
+- CSS encapsulation?

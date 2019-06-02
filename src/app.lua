@@ -1,4 +1,6 @@
-local Object = (require "helpers").Object
+local helpers = require "helpers"
+local Object = helpers.Object
+local Template = helpers.Template
 
 local vue = Object { el = "#app" }
 
@@ -14,10 +16,6 @@ vue.filters = Object {
     end
 }
 
-vue.template = [[
-    <p class="example">
-        Hello, <span>{{world | capitalize}}</span>!
-    </p>
-]]
+vue.template = Template "app"
 
 return vue
