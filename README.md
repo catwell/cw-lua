@@ -2,20 +2,30 @@
 
 This is a sample project showing how to use the [CDN version of Vue](https://vuejs.org/v2/guide/installation.html#CDN) with [fengari-web](https://github.com/fengari-lua/fengari-web) and [LuaCC](https://github.com/mihacooper/luacc).
 
-## Build dependencies
+## Build system
+
+### Build dependencies
 
 - Lua 5.3
-- bash, curl, grep, sed, tr
+- [tup](http://gittup.org/tup)
 - [luacheck](https://github.com/mpeterv/luacheck)
 
-## How to use this?
+### Bootstrapping
 
-- Edit the Lua source files in `src/` however you like it, as long as you keep a `main.lua` file.
-- Edit the files in `static` however you like it as well.
-- Run `./script/build.sh`. It will download dependencies the first time it is run.
-- Output will be in `dist`. You can use something like [simple-http-server](https://github.com/TheWaWaR/simple-http-server) to try it out. Running it out of a directory will not work because of CORS.
+The first time you use this project on a new machine, run `./script/bootstrap.sh`. This will download dependencies and initialize the build system.
+
+### Building
+
+Run `tup` to build once. Run `tup monitor -f -a` to get hot code reloading.
+
+### Tupfile
+
+All Lua files should be added to `rule_lua` in `Tupfile.lua`. `main.lua` should always be first. This is necessary because Tup does not support recursive globbing.
+
+### Output
+
+Output will be in `dist`. You can use something like [simple-http-server](https://github.com/TheWaWaR/simple-http-server) to try it out. Running it out of a directory will not work because of CORS.
 
 ## Possible improvements
 
-- Use [Tup](http://gittup.org/tup/) instead of a shell script to build, get hot reloading for free.
 - Use separate files for templates to get syntax highlighting.

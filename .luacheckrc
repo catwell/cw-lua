@@ -13,4 +13,4 @@ ignore = {
     "231/.*_",
 }
 
-exclude_files = {"deps", "dist"}
+exclude_files = {"deps", "dist", "Tupfile.lua"}
