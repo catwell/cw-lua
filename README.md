@@ -26,11 +26,12 @@ You should not need to touch `Tuprules.lua`.
 
 ### Output
 
-Output will be in `dist`. You can use something like [simple-http-server](https://github.com/TheWaWaR/simple-http-server) to try it out. Running it out of a directory will not work because of CORS.
+Output will be in `dist`. You can use something like [simple-http-server](https://github.com/TheWaWaR/simple-http-server) to try it out, with this command:
+
+    simple-http-server --index --try-file index.html
 
 ## Possible improvements
 
-- Demonstrate sub-components.
-- Demonstrate routing.
-- Demonstrate Web Components usage.
+- Demonstrate sub-components (props and events).
+- Demonstrate Web Components usage?
 - CSS encapsulation?

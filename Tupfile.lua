@@ -1,13 +1,16 @@
 
 local lua_sources = {
     "main.lua",
-    "app.lua",
+    "home.lua",
     "helpers/object.lua",
+    "helpers/array.lua",
+    "helpers/template.lua",
     "helpers/init.lua",
 }
 
 local templates = {
-    "app.html"
+    "home.html",
+    "about.html",
 }
 
 rule_dep "fengari-web.js"
