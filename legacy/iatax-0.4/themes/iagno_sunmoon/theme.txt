@@ -1,0 +1,6 @@
+NAME : Iagno Sunmoon
+AUTHOR : AlSim
+RELEASE DATE : Jan. 2005
+
+This theme is part of the 'Iagno' themes package.
+All the themes included in this package are inspired by themes from Iagno, also used in Gataxx.
