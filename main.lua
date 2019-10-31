@@ -16,6 +16,17 @@ local COLOR = {
     SELECTION = { 255, 0, 0, 255 },
 }
 
+do
+    -- Color range changed in Löve 11.
+    if love.getVersion() >= 11 then
+        for _, color in pairs(COLOR) do
+            for i, v in ipairs(color) do
+                color[i] = v / 255
+            end
+        end
+    end
+end
+
 local SCREEN = {home = {}, game = {}}
 
 local reset_dimensions = function(self)
