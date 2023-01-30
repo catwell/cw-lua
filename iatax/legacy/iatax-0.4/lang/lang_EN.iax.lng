@@ -1,0 +1,66 @@
+# English language module for Iatax
+# For use with v0.4
+# Translation : AlSim
+# Iatax is Copyright (C) 2004-2005 Pierre 'AlSim' CHAPUIS (alsim@users.sf.net)
+# Homepage : http://iatax.sf.net
+# Released under the terms of the GPL
+
+package txt ;
+
+$and = "and" ;
+$black_ia = "black A.I." ;
+$by_end_domination = "by end domination" ;
+$by_erradicating = "by erradicating" ;
+$cheated = "cheated" ;
+$choose_file = "Choose file" ;
+$col_black = "Black" ;
+$col_white = "White" ;
+$doesnt_exist = "doesn't exist" ;
+$draw_match = "draw match" ;
+$enter_your_name = "please enter your name" ;
+$err_invalid_logfile = "is not a valid Iatax logfile" ;
+$err_load_logfile = "Iatax couldn't open log file" ;
+$err_load_tmp_ia = "Iatax was unable to load A.I. cache" ;
+$error = "error" ;
+$from = "from" ;
+$game = "game" ;
+$game_over = "Game Over" ;
+$game_state_is = "Game state is" ;
+$games_played = "game(s) played" ;
+$has = "has" ;
+$human_player = "human player" ;
+$ig_question0 = "Start Piece's X value" ;
+$ig_question1 = "Start Piece's Y value" ;
+$ig_question2 = "End Piece's X value" ;
+$ig_question3 = "End Piece's Y value" ;
+$igload = "Loading graphical interface" ;
+$invalid_answer = "invalid answer" ;
+$logfile = "logfile" ;
+$match = "match" ;
+$needs_bugcheck = "needs a bugcheck" ;
+$no_skip = "You are allowed to skip a turn ONLY if you can do nothing else !" ;
+$not_recorded = "is not recorded in this logfile" ;
+$number = "number" ;
+$of = "of" ;
+$or = "or" ;
+$replayed_match = "REPLAYED MATCH" ;
+$replaying = "replaying" ;
+$results = "RESULTS" ;
+$seg_exitgrid = "tried to exit the Grid" ;
+$seg_invalid_move = "made an invalid move" ;
+$seg_nopiece = "tried to play a piece that didn't exist (or was not his)" ;
+$seg_play_over = "tried to play on top of an existing piece" ;
+$seg_skipturn = "tried to skip a turn while he could play" ;
+$set_parameters = "Set parameters" ; # depracated ?
+$starting_new_game = "starting new game" ;
+$turn = "turn" ;
+$lr_what_to_do = "What do you want to do (turn number/[+]/-/r/q)" ;
+$which = "which" ;
+$white_ia = "white A.I." ;
+$withdrawed = "withdrawed" ;
+$won_by_segfault = "won by SegFault" ;
+$won_by = "won by" ;
+$won_the_game = "won the game" ;
+$won_the_match = "won the match" ;
+
+1;

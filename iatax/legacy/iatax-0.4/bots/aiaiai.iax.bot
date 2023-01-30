@@ -1,0 +1,225 @@
+# This is 'AIAIAI' bot for Iatax (Aiaiai Is Alsim's Iatax Artifficial Intelligence)
+# Version : devel.
+# Copyright (C) 2005 Pierre 'AlSim' CHAPUIS (alsim@users.sf.net)
+# Homepage : http://iatax.sf.net
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program ; if not, write to the Free Software
+#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+$Name = 'aiaiai' ;
+$IsHuman = 0 ;
+
+sub Play
+{
+   $type = shift ;
+   (&main::VerSkip($type)) && return -1 ;
+   $pastype = 3-$type ;
+   my $diffmax = -10 ;
+   &MakeTablo ;
+
+   for my $phase (0 .. 1)
+   {
+    my ($X,$Y,$jump,$Xs,$Ys) = (0,-1,0,0,-1) ;
+    ML:
+    while ($X != -1)
+    {
+     &ResetTablo ;
+     ($X,$Y,$jump,$Xs,$Ys) = &SearchAllowed($X,$Y,$jump,$Xs,$Ys) ;
+     &SimuPlay($type,$X,$Y,$jump,$Xs,$Ys) ;
+
+     if ($X == -1) {last ML}
+     $niv_adv_max = &NiveauAdvMax ;
+     &AdvPlay($niv_adv_max,0,1) ;
+     my $diff = &CalcDiff ;
+     if ($phase and $diff == $diffmax) {return ($Xs,$Ys,$X,$Y)}
+     if ($diff > $diffmax) {$diffmax = $diff}
+    }
+   }
+
+}
+
+sub MakeTablo
+{
+   @Tablo0 = @Tablo1 = @Tablo2 = @Tablo3 = @Tablo4 = @Tablo5 = @Tablo6 = (0,0,0,0,0,0,0) ;
+   @tablo = (\@Tablo0,\@Tablo1,\@Tablo2,\@Tablo3,\@Tablo4,\@Tablo5,\@Tablo6)
+}
+
+sub ResetTablo
+{
+   for my $i (0 .. 6) 
+   {
+    for my $j (0 .. 6) {@tablo[$i]->[$j] = @main::grid[$i]->[$j]}
+   }
+}
+
+sub SearchAllowed
+{
+   my ($initX,$initY,$saut,$initXs,$initYs) = @_ ;
+   if ($saut and $initYs < 6) {$initYs++} elsif ($saut and $initXs < 6) {$initXs++} elsif ($initY < 6) {$initY++ ; $initYs = -1 ; $initXs = 0} else {$initX++ ; $initY = 0 ; $initYs = -1 ; $initXs = 0}
+   for my $i ($initX .. 6)
+   {
+    for my $j ($initY .. 6)
+    {
+     if (@tablo[$i]->[$j] == 0)
+     {
+      for my $iD ($i-1 .. $i+1) 
+      {
+       for my $jD ($j-1 .. $j+1) 
+       {
+        if ($iD > -1 and $iD < 7 and $jD > -1 and $jD < 7 and @tablo[$iD]->[$jD] == $type) {return($i,$j,0,$iD,$jD)}
+       }
+      }
+      for my $iD ($i-2 .. $i+2)
+      {
+       for my $jD ($j-2 .. $j+2)
+       {
+        if ($iD > -1 and $iD < 7 and $jD > -1 and $jD < 7 and @tablo[$iD]->[$jD] == $type and 10*($iD+1)+$yD > 10*($initXs+1)+$initYs) {return($i,$j,1,$iD,$jD)}
+       }
+      }
+     }
+     $initY = 0 ;
+     $initYs = -1
+    }
+   }
+   return -1
+}
+
+sub AdvPlay
+{
+   my ($niveau,$nb,$saut) = @_ ;
+   for my $i (0 .. 6)
+   {
+    for my $j (0 .. 6)
+    {
+     if (&CalcNiveau($pastype,$i,$j) == $niveau)
+     {
+      for my $iD ($i-1 .. $i+1)
+      {
+       for my $jD ($j-1 .. $j+1)
+       {
+        if ($iD > -1 and $iD < 7 and $jD > -1 and $jD < 7 and @tablo[$iD]->[$jD] == $pastype) 
+        {
+         if ($nb) {$nb--}
+         else {&SimuPlay($pastype,$i,$j) ; return 1}
+        }
+       }
+      } 
+     }
+    }
+   }
+   my $copie ;
+   for my $i (0 .. 6)
+   {
+    for my $j (0 .. 6)
+    {
+     $copie = 0 ;
+     if (&CalcNiveau($pastype,$i,$j) == $niveau)
+     {
+      for my $iD ($i-1 .. $i+1) 
+      {
+       for my $jD ($j-1 .. $j+1) 
+       {
+        if ($iD > -1 and $iD < 7 and $jD > -1 and $jD < 7 and @tablo[$iD]->[$jD] == $pastype) {$copie = 1}
+       }
+       if (!$copie)
+       {
+        for my $iD ($i-2 .. $i+2) 
+        {
+         for my $jD ($j-2 .. $j+2) 
+         {
+          if ($iD > -1 and $iD < 7 and $jD > -1 and $jD < 7 and @tablo[$iD]->[$jD] == $pastype) 
+          {
+           if ($nb) {$nb--}
+           else {&SimuPlay($pastype,$i,$j,1,$iD,$jD) ; return 1}
+          }
+         }
+        }
+       }
+      } 
+     }
+    }
+   }
+return -1
+}
+
+sub NiveauAdvMax
+{
+   my $niv_max = 0 ;
+   for my $i (0 .. 6)
+   {
+    for my $j (0 .. 6)
+    {
+     if (@tablo[$i]->[$j] == 0)
+     {
+      for my $iD ($i-2 .. $i+2) 
+      {
+       for my $jD ($j-2 .. $j+2) 
+       {
+        if ($iD > -1 and $iD < 7 and $jD > -1 and $jD < 7 and @tablo[$iD]->[$jD] == $pastype)
+        {
+         my $niv_tmp = &CalcNiveau($pastype,$i,$j) ;
+         if ($niv_max < $niv_tmp) {$niv_max = $niv_tmp}
+        }
+       }
+      }
+     }
+    }
+   }
+return $niv_max
+}
+
+sub CalcNiveau
+{  
+   my $nb = 0 ;
+   my ($typeT,$i,$j) = @_ ;
+   my $pastypeT = 3-$typeT ;
+   if (@tablo[$i]->[$j] != 0) {return -1}
+   for my $iD ($i-1 .. $i+1) 
+   {
+    for my $jD ($j-1 .. $j+1) 
+    {
+     if ($iD > -1 and $iD < 7 and $jD > -1 and $jD < 7 and @tablo[$iD]->[$jD] == $pastypeT) {$nb++}
+    }
+   }
+   return $nb
+}
+
+sub SimuPlay
+{
+   my ($type,$x,$y,$saut,$xS,$yS) = @_ ;
+   for my $i ($x-1 .. $x+1) 
+   {
+    for my $j ($y-1 .. $y+1) 
+    {
+     if ($i > -1 and $i < 7 and $j > -1 and $j < 7 and @tablo[$i]->[$j] != 0) {@tablo[$i]->[$j] = $type}
+    }
+   }
+   @tablo[$x]->[$y] = $type ;
+   if ($saut) {@tablo[$xS]->[$yS] = 0}
+}
+
+sub CalcDiff
+{
+   my ($Ntype, $Npastype) = (0,0) ;
+   for my $i (0 .. 6)
+   {
+    for my $j (0 .. 6)
+    {
+     if (@tablo[$i]->[$j] == $type) {$Ntype++}
+     elsif (@tablo[$i]->[$j] == $pastype) {$Npastype++}
+    }
+   }
+my $diff = $Ntype-$Npastype ;
+return $diff
+}

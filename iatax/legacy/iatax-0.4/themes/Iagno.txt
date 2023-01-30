@@ -1,0 +1,6 @@
+IAGNO THEMES FOR IATAX
+
+These themes are all inspired by Iagno themes, which are also used in Gataxx.
+Both Iagno and Gataxx are free software and belong to the games section of the Gnome project. If you like the themes, try the software : 
+ - Gataxx : http://www.darkcorner.net/projects/gataxx/
+ - Iagno : no homepage, see http://www.gnome.org

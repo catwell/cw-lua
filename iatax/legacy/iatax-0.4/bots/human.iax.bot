@@ -1,0 +1,63 @@
+# 'Human' bot for Iatax 
+# Version 0.4
+# Copyright (C) 2004-2005 Pierre 'AlSim' CHAPUIS (alsim@users.sf.net)
+# Homepage : http://iatax.sf.net
+# Released under the terms of the GPL
+
+
+
+$Name = 'unset' ;
+$IsHuman = 1 ;
+
+sub GetVal
+{
+   $Rep = 'g' ;
+   $Txt = shift ;
+   GETVAL:
+   while (1)
+   {
+    print "$Txt\n>>> " ;
+    chomp($Rep = <STDIN>) ;
+    if ($Rep eq 'g') {&main::PrintGrid}
+    elsif ($Rep eq 'w') {&main::Flt($type, $col, $txt::withdrawed) ; last MAIN}
+    elsif ($Rep eq 's' && &main::VerSkip($type)) {last ASKANS}
+    elsif ($Rep>=0 and $Rep<=6 and $Rep eq 1*$Rep) {last GETVAL}
+    else {print "\n\u$txt::invalid_answer !\n"}
+   }
+}
+
+sub Play
+{
+   $type = shift ;
+   if ($type == 1) {$col = "\u$txt::col_black"}
+   if ($type == 2) {$col = "\u$txt::col_white"}
+   
+   while ($Name eq 'unset' or $Name eq '') 
+   {
+    print "\n\u$txt::human_player ($col), $txt::enter_your_name : " ; 
+    chomp($Name = <STDIN>)
+   }
+   
+   print "\n\u$txt::turn $main::tour, $Name, $col.\n" ;
+
+   ASKANS:
+   {
+    &GetVal("\n$txt::ig_question0 ? ($txt::or g/s/w)") ;
+    my $r0 = $Rep ;
+    &GetVal("$txt::ig_question1 ?") ;
+    my $r1 = $Rep ;
+    &GetVal("$txt::ig_question2 ?") ;
+    my $r2 = $Rep ;
+    &GetVal("$txt::ig_question3 ?") ;
+    my $r3 = $Rep ;
+    return ($r0, $r1, $r2, $r3)
+   }
+   return -1
+}
+
+sub Play_IG
+{
+   my $type = shift ;
+   if ($Name eq 'unset') {$Name = "\u$txt::human_player $type"}
+   return (&IG::HumanPlay($type))
+}

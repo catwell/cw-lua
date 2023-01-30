@@ -1,0 +1,66 @@
+# French language module for Iatax
+# For use with v0.4
+# Translation : AlSim
+# Iatax is Copyright (C) 2004-2005 Pierre 'AlSim' CHAPUIS (alsim@users.sf.net)
+# Homepage : http://iatax.sf.net
+# Released under the terms of the GPL
+
+package txt ;
+
+$and = "et" ;
+$black_ia = "l'I.A. noire" ;
+$by_end_domination = "par domination finale" ;
+$by_erradicating = "par erradication de" ;
+$cheated = "trich\xE9" ;
+$choose_file = "Choisissez un fichier" ;
+$col_black = "Noir" ;
+$col_white = "Blanc" ;
+$doesnt_exist = "n'existe pas" ;
+$draw_match = "\xE9galit\xE9" ;
+$enter_your_name = "entrez votre nom SVP" ;
+$err_invalid_logfile = "n'est pas un fichier de rapport Iatax valide" ;
+$err_load_logfile = "Iatax n'a pas pu ouvrir le fichier de rapport" ;
+$err_load_tmp_ia = "Iatax n'a pas pu charger le cache I.A." ;
+$error = "erreur" ;
+$from = "au" ;
+$game = "jeu" ;
+$game_over = "Fin de partie" ;
+$game_state_is = "Etat du jeu" ;
+$games_played = "partie(s) jou\xE9e(s)" ;
+$has = "a" ;
+$human_player = "joueur humain" ;
+$ig_question0 = "Abscisse de la pi\xE8ce de d\xE9part" ;
+$ig_question1 = "Ordonn\xE9e de la pi\xE8ce de d\xE9part" ;
+$ig_question2 = "Abscisse de la pi\xE8ce d'arriv\xE9e" ;
+$ig_question3 = "Ordonn\xE9e de la pi\xE8ce d'arriv\xE9e" ;
+$igload = "Chargement de l'interface graphique" ;
+$invalid_answer = "r\xE9ponse invalide" ;
+$logfile = "fichier de rapport" ;
+$match = "match" ;
+$needs_bugcheck = "n\xE9cessite un bon d\xE9bogage" ;
+$no_skip = "Vous n'avez le droit de sauter un tour QUE si vous ne pouvez rien faire d'autre !" ;
+$not_recorded = "absent de ce rapport" ;
+$number = "num\xE9ro" ;
+$of = "de" ;
+$or = "ou" ;
+$replayed_match = "MATCH REJOUE" ;
+$replaying = "red\xE9marrage du" ;
+$results = "RESULTATS" ;
+$seg_exitgrid = "essay\xE9 de sortir du plateau" ;
+$seg_invalid_move = "tent\xE9 un d\xE9placement invalide" ;
+$seg_nopiece = "essay\xE9 de jouer une pi\xE8ce qui n'existait pas (ou ne lui appartenait pas)" ;
+$seg_play_over = "essay\xE9 de jouer sur une case d\xE9ja occup\xE9e" ;
+$seg_skipturn = "essay\xE9 de sauter un tour alors qu'il pouvait jouer" ;
+$set_parameters = "R\xE9glez les param\xE8tres" ; # deprecated ?
+$starting_new_game = "d\xE9marrage d'une nouvelle partie" ;
+$turn = "tour" ;
+$lr_what_to_do = "Que voulez-vous faire (aller au tour/[+]/-/r/q)" ;
+$which = "quel" ;
+$white_ia = "l'I.A. blanche" ;
+$withdrawed = "abandonn\xE9" ;
+$won_by_segfault = "gagn\xE9 par SegFault (erreur de segmentation)" ;
+$won_by = "gagn\xE9 par" ;
+$won_the_game = "gagn\xE9 la partie" ;
+$won_the_match = "gagn\xE9 le match" ;
+
+1;

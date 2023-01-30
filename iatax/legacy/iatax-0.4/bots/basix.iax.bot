@@ -1,0 +1,80 @@
+# 'BASIX' bot for Iatax
+# Version 0.2
+# Copyright (C) 2005 Pierre 'AlSim' CHAPUIS (alsim@users.sf.net)
+# Homepage : http://iatax.sf.net
+# Released under the terms of the GPL
+
+$Name = 'basix' ;
+$IsHuman = 0 ;
+
+sub ParcourirGrid
+{
+   my ($type,$phase,$nbmax) = @_ ;
+   my $NPM = 0 ;
+   my $mvt_type = 0 ;
+   my $mvt_fin = 0 ;
+   for my $i1 (0 .. 6) 
+   {
+    for my $j1 (0 .. 6) 
+    {
+# <POUR CHAQUE CASE DE @GRID>
+     if (@main::grid[$j1]->[$i1]==$type)
+     {
+      for my $i2 (-2 .. 2)
+      {
+       for my $j2 (-2 .. 2)
+       {
+        my $iR0 = $i1+$i2 ;
+        my $jR0 = $j1+$j2 ;
+        if ($iR0>=0 and $iR0<=6 and $jR0>=0 and $jR0<=6 and @main::grid[$jR0]->[$iR0]==0)
+        {
+         my $NP = 0 ;
+         for my $i3 (-1 .. 1)
+         {
+          for my $j3 (-1 .. 1)
+           {
+           my $iT = $iR0+$i3 ;
+           my $jT = $jR0+$j3 ;
+           if ($iT>=0 and $iT<=6 and $jT>=0 and $jT<=6 and @main::grid[$jT]->[$iT]!=$type and @main::grid[$jT]->[$iT]!=0) {$NP++}
+          }
+         }
+         if (abs($i2)==2 or abs($j2)==2) {$mvt_type = 2}
+         else {$mvt_type = 1}
+         if ($NP>$NPM and $mvt_type==2 and $phase==0) {$NPM=$NP; $mvt_fin=2}
+         elsif ($NP>=$NPM and $mvt_type==1 and $phase==0) {$NPM=$NP; $mvt_fin=1}
+# <RETOUR DE LA VALEUR>
+         if ($NP==$nbmax and $mvt_type==$phase and $phase>0) 
+         {
+          my ($iR1,$jR1) ;
+          PIONSRC:
+          for my $i4 (-$phase .. $phase)
+          {
+           for my $j4 (-$phase .. $phase)
+           {
+            $iR1 = $iR0+$i4 ;
+            $jR1 = $jR0+$j4 ;
+            if ($iR1>=0 and $iR1<=6 and $jR1>=0 and $jR1<=6 and ($i4!=0 or $j4!=0) and @main::grid[$jR1]->[$iR1]==$type) {last PIONSRC}
+           }
+          }
+          return ($jR1,$iR1,$jR0,$iR0)
+         }
+# </RETOUR DE LA VALEUR>
+        }
+       }
+      }
+     }
+    }
+   }
+# </POUR CHAQUE CASE DE @GRID>
+   return ($NPM,$mvt_fin)
+}
+
+sub Play
+{
+   my $type = shift ;
+   my ($nbmax,$ph_type) = &ParcourirGrid($type,0,0) ;
+   if ($ph_type == 0) {return -1}
+   my @ans = &ParcourirGrid($type,$ph_type,$nbmax) ;
+   return @ans
+}
+

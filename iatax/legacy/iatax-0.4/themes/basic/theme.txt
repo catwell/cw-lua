@@ -1,0 +1,5 @@
+NAME : Basic
+AUTHOR : AlSim
+RELEASE DATE : Nov. 2004
+
+This is the basic theme for Iatax.

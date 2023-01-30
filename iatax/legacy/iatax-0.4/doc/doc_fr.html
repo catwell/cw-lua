@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>Iatax</title>
+  <meta content="AlSim" name="author">
+  <meta content="Iatax French documentation" name="description">
+</head>
+
+<body style="color: black; background-color: #eeeeff;" alink="black" vlink="black" link="black">
+<span style="font-family: courier new,courier,monospace;">
+
+<div style="text-align: center;">
+<img alt="IATAX" src="logo.png"><br>
+AN ATAXX GAME FOR A.I.s
+</div>
+<br><hr style="width: 100%; height: 2px;"><br>
+
+Copyright (C) 2004-2005 Pierre 'AlSim' CHAPUIS (alsim@users.sf.net)<br>
+Vous &ecirc;tes autoris&eacute; &agrave; copier, distribuer et/ou modifier ce document conform&eacute;ment aux termes de la GNU Free Documentation License, Version 1.2 ou n'importe quelle version post&eacute;rieure publi&eacute;e par la Free Software Foundation ; avec aucune Section Invariante et aucun Texte de Couverture Avant ou Arri&egrave;re (with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts).<br>
+Vous devriez avoir re&ccedil;u une copie de la <a href="GFDL.txt">GNU Free Documentation License</a> avec ce fichier. Sinon, &eacute;crivez &agrave; AlSim.
+
+<br><br>
+<div style="text-align: center;">
+[ <a href="#1">Questions et r&eacute;ponses</a> - <a href="#2">Utiliser Iatax</a> - <a href="#3">R&egrave;gles d'Ataxx</a> ] <br>
+[ <a href="#4">Cr&eacute;er votre propre bot</a> - <a href="#5">Le module LogReader</a> - <a href="#6">Et maintenant ?</a> ]
+</div>
+
+<br><br>
+<a name="1">I) <u>Questions et r&eacute;ponses</u>
+<br><br>
+<i>Qu'est-ce que Iatax ?</i><br>
+Iatax (avec un seul 't') est un jeu bas&eacute; sur les r&egrave;gles d'Ataxx (que vous pouvez conna&icirc;tre gr&acirc;ce &agrave; son c&eacute;l&egrave;bre port pour Gnome nomm&eacute; Gataxx). La diff&eacute;rence est que dans Iatax, les 'joueurs' sont des bots developp&eacute;s par vous en language Perl, un peu comme dans CoreWars.
+<br><br>
+<i>Y-a-t'il un site web de Iatax ? Un E-mail ?</i><br>
+Oui ! Le projet Iatax a la chance d'&ecirc;tre h&eacute;berg&eacute; &agrave; SourceForge.net. Sa page personnelle est www.iatax.sf.net. Si vous voulez envoyer un Em@il &agrave; son auteur pour une raison quelconque, vous pouvez &eacute;crire &agrave; alsim@users.sf.net.
+<br><br>
+<i>Suis-je autoris&eacute; &agrave; utiliser, modifier, redistribuer ... Iatax ?</i><br>
+Oui. Iatax est un logiciel libre, diffus&eacute; sous license GPL. Vous devriez en avoir re&ccedil;u une copie avec ce logiciel si vous l'avez t&eacute;l&eacute;charg&eacute;,sinon, &eacute;crivez &agrave; AlSim. Cette license vous autorise &agrave; faire un grand nombre de choses avec le programme tant qu'il reste attach&eacute; &agrave; une copie de la GPL.
+<br><br>
+<i>Et si je veux rejoindre l'&eacute;quipe de d&eacute;veloppement ?</i><br>
+'L'&eacute;quipe de d&eacute;veloppement' compte pour l'instant une seule personne, AlSim, mais vous &ecirc;tes bien entendu le bienvenu ! Si vous pouvez dessiner, coder, traduire ..., j'appr&eacute;cierai grandemant votre aide ! Envoyez un mail &agrave; AlSim et p&eacute;n&eacute;trez le merveilleux monde de Iatax de l'int&eacute;rieur ! De toute fa&ccedil;on, utiliser Iatax est un peu d&eacute;velopper Iatax si vous envoyez vos bots, rapports de bug ...
+<br><br>
+<a name="2">II) <u>Utiliser Iatax</u>
+<br><br>
+ - 1. Configuration n&eacute;cessaire -<br>
+Iatax est &eacute;crit en Perl et peut tourner sur n'importe quel syst&egrave;me supportant Perl. Vous devez &eacute;galement installer SDL et SDL-Perl si vous voulez utiliser l'interface graphique.
+<br><br>
+ - 2. Installation -<br>
+Iatax ne n&eacute;cessite pas d'installation. T&eacute;l&eacute;chargez simplement la derni&egrave;re version, d&eacute;compressez-la (tar -xzvf iatax-*.tar.gz), entrez dans le dossier qui appara&icirc;t alors et lancez iatax.pl.
+<br><br>
+ - 3. Options de la ligne de commande -
+<br><br>
+   --help : Affiche une aide sur les options de la ligne de commande
+<br><br>
+   --iiaB nom_du_bot or fichier_bot.iax.bot : Change l'I.A. noire (Human par d&eacute;faut)
+<br><br>
+   --iiaW nom_du_bot or fichier_bot.iax.bot : Change l'I.A. blanche (Human par d&eacute;faut)
+<br><br>
+   --logfile fichier_de_rapport.iax.log : Permet &agrave; l'utilisateur de choisir son fichier de rapport (gamelog.iax.log dans le dossier de Iatax par d&eacute;faut).
+<br><br>
+   --nolog : Iatax ne g&eacute;n&egrave;rera pas de rapport. L'utilisation de cette option n'est PAS recommand&eacute;e : analyser un jeu avec LogReader est uniquement possible si un rapport a &eacute;t&eacute; g&eacute;n&eacute;r&eacute;.
+<br><br>
+   --readlog fichier_de_rapport.iax.log : Lance le module d'analyse de rapport LogReader sur le fichier pass&eacute; en argument (gamelog.iax.log dans le dossier de Iatax par d&eacute;faut).
+<br><br>
+   --lang XX,o&ugrave; XX est un code de langue (ex. : FR, EN ...) : Change le langage utilis&eacute; par Iatax. vous devez pr&eacute;alablement t&eacute;l&eacute;charger et installer le fichier de langage correspondant (lang_XX.iax.lng ; lisez plus loin pour savoir comment faire). Le langage par d&eacute;faut est l'anglais.
+<br><br>
+   --nb X, o&ugrave; X est un nombre : Iatax jouera X parties cons&eacute;cutives entre les deux diff&eacute;rents bots, le vainqueur du match &eacute;tant celui qui en gagne la majorit&eacute;. L'&eacute;galit&eacute; est possible en cas de X pair. ATTENTION : ne choisissez pas X trop grand si vous ne voulez pas que votre match dure trop longtemps ...
+<br><br>
+   --ig : Iatax tournera en mode graphique. N&eacute;cessite SDL.
+<br><br>
+   --theme nom_du_th&egrave;me : Permet de choisir le th&egrave;me de l'interface graphique (basic par d&eacute;faut).
+<br><br>
+ - 4. Personaliser votre Iatax -
+<br><br>
+Vous pouvez faire diff&eacute;rentes choses pour am&eacute;liorer votre Iatax : <br>
+* Installer de nouveaux langages : t&eacute;l&eacute;chargez-les, puis copiez les fichiers dans le dossier "lang".<br>
+* Ajouter de nouveaux th&egrave;mes graphiques : t&eacute;l&eacute;chargez-les, puis d&eacute;compressez les archives dans le dossier "themes".<br>
+* Ajouter des bots : t&eacute;l&eacute;chargez-les, puis copiez les fichiers dans le dossier "bots".
+<br><br>
+ - 5. Human -
+<br><br>
+Human est un fichier .iax.bot sp&eacute;cial qui vous permet de jouer contre vos bots (pour les tester/d&eacute;boguer/...). Bien entendu, si vous d&eacute;finissez les deux I.A.s noire et blanche comme Human, bous pourrez utiliser Human comme un jeu 'normal' dans le style d'Ataxx, m&ecirc;me si ce n'est pas le but recherch&eacute;.<br>
+Si vous lancez Human en mode texte, il vous demandera votre nom puis, &agrave; chaque tour, les coordonn&eacute;es de la pi&egrave;ce que vous voulez jouer et de votre cible. A n'importe quel moment, vous pouvez r&eacute;pondre 'w' pour abandonner, 's' pour passer le tour (notez que &ccedil;a ne marchera que si vous ne pouvez rien faire d'autre) ou 'g' pour voir l'&eacute;tat du jeu. En mode graphique, l'utilisation d'Human est intuitive et ne devrait pas vous poser de probl&egrave;me (utilisez Tab pour passer le tour) ...
+<br><br>
+ - 6. BASIX -
+<br><br>
+BASIX est un bot inclus dans Iatax pour servir de test. vous pouvez l'utiliser comme n'importe quel bot en tapant '--iiaX basix'. Il peut aussi vous servir d'example pour l'&eacute;criture de vos propres bots.
+<br><br>
+<a name="3">III) <u>R&egrave;gles d'Ataxx</u>
+<br><br>
+Les r&egrave;gles d'Ataxx sont simples, mais le jeu n'est pas facile. Le but est d'avoir plus de pions que votre adversaire &agrave; la fin du jeu, qui se produit quand l'un des deux joueurs n'a plus de pions ou quand le plateau (appell&eacute; Grid &agrave; Iatax) est plein. Dans Iatax, le jeu peut aussi se terminer sur une 'SegFault' (c'est &agrave; dire lorsqu'un bot essaie de faire quelque chose d'interdit) ou quand l'un des joueurs abandonne.<br>
+Le Grid est un tableau de 7 par 7. Au d&eacute;but du jeu, chaque joueur poss&egrave;de deux pions dans des coins oppos&eacute;s du tableau, comme sur la capture ci-dessous.
+<br><br>
+<div style="text-align: center;">
+<img alt="IATAX" src="sshots/turn0.png">
+</div>
+<br><br>
+Les noirs commencent. Deux types de coups sont autoris&eacute;s : la 'copie' et le 'd&eacute;placement'. La copie consiste &agrave; ajouter un pion dans une des cases proches d'un de vos pions. Le d&eacute;placement consiste &agrave; d&eacute;placer l'un de vos pions du plateau vers une autre case proche de l'une de celles o&ugrave; vous auriez pu jouer une copie. Les obstacles ne bloquent pas les d&eacute;placements, mais vous ne pouvez pas placer l'un de vos pions sur une case d&eacute;ja occup&eacute;e. Sur cette capture, le joueur blanc peut jouer une copie sur l'une des cases vertes ou un d&eacute;placement sur l'une des jaunes.
+<br><br>
+<div style="text-align: center;">
+<img alt="IATAX" src="sshots/moves.png">
+</div>
+<br><br>
+Quand vous copiez ou d&eacute;placez l'un de vos pions sur une case adjacente &agrave; un ou plus des pions de votre adversaire, vous le capturez. C'est le but du jeu : voler les pi&egrave;ces de votre adversaire.<br>
+Si vous n'avez pas d&eacute;fini l'option '--nb', le gagnant de la premi&egrave;re partie remporte le match, sinon, le vainqueur est celui qui gagne le plus de parties.
+<br><br>
+<a name="4">IV) <u>Cr&eacute;er votre propre bot</u>
+<br><br>
+Maintenant vous savez comment &ccedil;a marche, et vous aimeriez commencer &agrave; cr&eacute;er votre propre bot. Bonne id&eacute;e ! Pour commencer, vous aurez besoin d'un &eacute;diteur de texte. C'est mieux si il supporte la coloration syntaxique pour Perl (la pluspart des &eacute;diteurs connus comme Vi, Emacs, Kate, Gedit, Jext pour ceux qui tourneraient sous Windows ...peuvent le faire). Je recommande aux utilisateurs de Linux/BSD d'utiliser un &eacute;diteur sous X. Ca va probablement choquer les puristes, mais d&eacute;velopper un bot en mode texte n'est pas une bonne solution, car vous aurez de toute fa&ccedil;on besoin d'un serveur X pour des raisons de test. Si vous voulez vraiment conserver votre &eacute;diteur pr&eacute;f&eacute;r&eacute;, utilisez GVim ou XEmacs, ou lancez-le dans un terminal.<br>
+J'ai dit que les bots devaient &ecirc;tre &eacute;crits en Perl. Voici un exemple de la syntaxe &agrave; employer :
+<br><br>
+<span style="color: grey;">
+# Nom_du_bot par Auteur<br>
+# Courte description<br>
+</span>
+<br>
+<span style="color: green;">$Name</span> = <span style="color: pink;">'Name'</span> ;<br>
+<span style="color: green;">$IsHuman</span> = 0 ;<br>
+<br>
+<span style="color: blue;"><b>sub</b></span> Play<br>
+{<br>
+<i>votre_code_ici</i><br>
+<span style="color: blue;"><b>return</b></span> (<i>xSource</i>, <i>ySource</i>, <i>xAim</i>, <i>yAim</i>) <br>
+}
+<br><br>
+Bien sur, vous pouvez &eacute;galement d&eacute;finir d'autres fonctions que Play, mais c'est elle qui sera appell&eacute;e par Iatax avec un unique argument (r&eacute;cup&eacute;rable par un shift), 1 si le bot joue les Noirs, 2 si le bot joue les Blancs. Votre bot est &eacute;galement autoris&eacute; &agrave; lire <span style="color: green;">@main::grid</span> pour conna&icirc;tre l'&eacute;tat du jeu, mais ne doit bien sur pas le modifier (sous peine de SegFault). Il doit renvoyer, comme dans l'example, un tableau de 4 &eacute;l&eacute;ments repr&eacute;sentant le mouvement effect&eacute;. Rappellez vous que le Grid est compos&eacute; ainsi : 
+
+<br><br>
+<div style="text-align: center;">
+<img alt="IATAX" src="sshots/gridorg.png">
+</div>
+<br><br>
+Si votre bot ne peut rien faire d'autre, il est autoris&eacute; &agrave; passer son tour. Pour passer un tour, renvoyez -1 &agrave; la place du tableau qui repr&eacute;sente votre coup. Mais attention : si votre bot pouvait jouer, cela provoquera une SegFault (les r&egrave;gles d'Ataxx interdisent de passer son tour sauf si c'est vraiment n&eacute;cessaire) ! Si vous ne voulez pas vous occuper de cela vous-m&ecirc;me, ajoutez juste ces deux lignes au d&eacute;but de votre code et &ccedil;a suffira :
+<br><br>
+<span style="color: blue;"><b>my</b></span> <span style="color: green;">$type</span> = <span style="color: blue;"><b>shift</b></span> ;<br>
+(<span style="color: red;"><b>&main::VerSkip</b></span>(<span style="color: green;">$type</span>)) && <span style="color: blue;"><b>return</b></span> -1 ;
+<br><br>
+Quand vous avez fini de coder, savegardez votre fichier dans le dossier 'bots' avec l'extension .iax.bot et lancez Iatax avec l'option '--IIAB votre_bot' ou '--IIAW votre_bot'.<br>
+Maintenant, je pense que vous en savez assez pour commencer &agrave; coder votre premier bot Iatax. Bon jeu !
+<br><br>
+<a name="5">V) <u>Le module LogReader</u>
+<br><br>
+Quand vous aurez cr&eacute;&eacute; votre premier bot, peut-&ecirc;tre marchera-t-il, et peut-&ecirc;tre pas ... Disons surement pas ! Et vous voudrez voir ce qui cloche pour le d&eacute;boguer. C'est le but de LogReader. Il s'appelle avec l'option '--readlog fichier_de_rapport.iax.log'. Si vous avez d&eacute;ja ouvert un fichier .iax.log (sinon, faites le maintenant !), vous avez vu que tous les coups sont enregistrez de mani&egrave;re ligible, si bien que si vous aviez un &eacute;chiquier et des pions (vous serez plus ou moins oblig&eacute; d'acheter un Othello si vous devenez fan de Iatax) vous pourriez rejouer la partie en entier.
+<br><br>
+LogReader peut faire tout le boulot pour vous ! En mode texte, vous devez d'abord entrer le num&eacute;ro de la partie (le premier &eacute;tant 1) que vous voulez &eacute;tudier (si vous n'avez pas d&eacute;fini '--nb', r&eacute;pondez '1'), puis utiliser '+/-' pour aller au tour suivant/pr&eacute;c&eacute;dent. Comme '+' est la r&eacute;ponse par d&eacute;faut, vous irez &eacute;galement au tour suivant en appuyant simplement sur entr&eacute;e. Si vous entrez un num&eacute;ro de tour, vous vous y rendrez automatiquement. Entrez 'q' pour quitter. En mode graphique, c'est encore plus simple : utilisez les fl&egrave;ches de votre clavier pour naviguer entre les niveaux (Droite : suivant ; Gauche : pr&eacute;c&eacute;dent ; PageUp : premier ; PageDown : dernier) et les parties (Bas : suivante ; Haut : pr&eacute;c&eacute;dente) et appuyez sur Echap pour quitter !
+<br><br>
+LogReader inclus &eacute;galement depuis la v0.3 un moyen de reprendre une partie &agrave; un tour donn&eacute;. Pour l'utiliser, tappez 'r' en mode texte ou appuyez sur entr&eacute;e avec l'interface graphique. Il peut &ecirc;tre utile dans de nombreux cas. Notez que vous pouvez rejouer une partie avec d'autres bots que ceux qui l'avaient commen&ccedil;&eacute; (c'est utile pour comparer leurs r&eacute;actions &agrave; une situation donn&eacute;e).
+<br><br>
+Vous verrez, cet outil est tr&egrave;s pratique. Je l'ai utilis&eacute; entre autres pour trouver le ... de bug dans la version 0.2DBE qui faisait qu'Human ne marchait pas en mode graphique, et je pense que sans LogReader, &ccedil;a m'aurait pris au minimun deux fois plus de temps.<br>
+Bien sur, vous pouvez aussi utiliser LogReader pour analyser les parties que votre bot &agrave; perdu pour &eacute;viter la d&eacute;faite la fois suivante ...
+<br><br>
+<a name="6">VI) <u>Et maintenant ?</u>
+<br><br>
+Maintenant que vous savez tout, arr&eacute;tez de lire cette ennuyeuse documentation et jouez &agrave; Iatax ;) Bon jeu !<br>
+<br>
+
+<div style="text-align: center;">
+<a href="http://www.iatax.sf.net">VISITEZ LE SITE DE IATAX</a>
+</div>
+
+</span>
+</body>
+</html>

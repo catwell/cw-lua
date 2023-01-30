@@ -1,0 +1,52 @@
+--- CHANGELOG FOR IATAX v0.4 ---
+
+0.4DBE2 -> 0.4
+- Theme 'basic' modified so that the pieces no longer have transparent pixels
+- A fully rewriten bot called AIAIAI has been created but is NOT bundled with Iatax (you can download it on iatax.sf.net)
+- The older AIAIAI in its 0.2 devel. version has been renamed BASIX 0.2 and is now able to skip its turn
+- Minor bugfixes and documentation changes
+
+0.4DBE1 -> 0.4DBE2
+- Added the "skip turn" ability
+- Front-end for Iatax now shows the turn and game number
+- LogReader recognises the SegFaults
+- Added PageUp / PageDown (go to first / last turn) in LogReader
+- Wrong turn numbers in LogReader bug fixed
+- Other minor bugfixes and improvements in everything
+- Documentation updated
+- Code of main, IG, LogReader and Human cleaned
+
+0.3 -> 0.4DBE1
+- Major bugfix in Human (front-end mode)
+- AIAIAI works and is now able to jump
+- Added AIAIAI documentation
+- Minor bugfixes and documentation changes
+
+0.3DBE2 -> 0.3
+
+- "replay from turn" now works in front-end mode
+- Withdrawing after a "replay from turn" when you play the Whites doesn't crash anymore
+- Minor buxfixes and changes in Iatax and in language files
+- Front-end is now theme-able
+- Added "replay from turn" and themes documentation
+
+
+0.3DBE -> 0.3DBE2
+
+- New "replay from turn" command in LogReader (use "r" in text mode or press Enter in front-end mode)
+- New bot : 'AIAIAI'. Copier only, for testing purpose.
+- Minor bugfixes and documentation changes
+
+0.2 -> 0.3DBE
+
+- You must now return your answer by using the 'return' command (instead of modifying @main::move)
+- Language files upgraded (EN and FR)
+- No more refresh of the whole window when going one turn back in LogReader
+- You can use UP and DOWN arrows to navigate through the different games in LogReader
+- Major buxfix in Human : it asks now the good questions in textmode 
+- Changes in the documentation
+
+0.1 -> 0.2
+
+- Everything ;)
+
