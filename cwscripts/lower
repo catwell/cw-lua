@@ -1,0 +1,2 @@
+#!/usr/bin/lua
+io.stdout:write(string.lower(io.stdin:read("*a")))
