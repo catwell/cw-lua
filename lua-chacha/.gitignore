@@ -1,0 +1,4 @@
+# build artifacts
+*.so
+*.o
+*.src.rock
