@@ -35,6 +35,7 @@ and sometimes projects that I stop maintaining end up here.
 - lua-zerorpc: [ZeroRPC](http://zerorpc.dotcloud.com/) implementation
 - luajit-msgpack: LuaJIT FFI-based module for MessagePack
 - lualua: an unfinished implementation of Lua 5.2 in LuaJIT
+- micrograd: a port of [micrograd](https://github.com/karpathy/micrograd)
 - nsqc: a [NSQ](http://nsq.io) client
 - sha256: a SHA-256 implementation in pure LuaJIT+FFI
 - tcpchat: simple TCP chat + Lua interpreter with LuaSocket
