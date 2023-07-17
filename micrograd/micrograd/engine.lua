@@ -1,16 +1,15 @@
-local value_mt = {}
 local value_methods = {}
-value_mt.__index = value_methods
+local value_mt = { __index = value_methods }
 
 local function new_value(data, _children, _op)
-    local r = {
+    local self = {
         data = data,
         grad = 0,
         _backward = function() end,
         _prev = _children or {},
         _op = _op or "",
     }
-    return setmetatable(r, value_mt)
+    return setmetatable(self, value_mt)
 end
 
 local function is_value(v)
