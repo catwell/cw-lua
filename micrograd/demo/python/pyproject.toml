@@ -1,0 +1,25 @@
+[project]
+name = "python"
+version = "0.1.0"
+description = "Code to generate the dataset for Lua micrograd demo"
+authors = [
+    { name = "Pierre Chapuis", email = "git@catwell.info" }
+]
+dependencies = [
+    "numpy>=1.24.4",
+    "matplotlib>=3.7.2",
+    "scikit-learn>=1.3.0",
+    "tk>=0.1.0",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+
+[tool.hatch.metadata]
+allow-direct-references = true

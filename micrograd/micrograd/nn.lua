@@ -68,7 +68,7 @@ end
 function layer_mt.__call(self, x)
     local out = {}
     for i, n in ipairs(self.neurons) do out[i] = n(x) end
-    return #out == 1 and out[0] or out
+    return #out == 1 and out[1] or out
 end
 
 function layer_methods.parameters(self)
