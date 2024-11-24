@@ -5,7 +5,7 @@
 ## Presentation
 
 This is a Lua implementation of Interval Tree Clocks, according to
-[the paper](http://haslab.uminho.pt/cbm/files/itc.pdf):
+[the paper](https://gsd.di.uminho.pt/members/cbm/ps/itc2008.pdf):
 
     Paulo Sérgio Almeida, Carlos Baquero and Victor Fonte
     Interval Tree Clocks: A Logical Clock for Dynamic Systems
