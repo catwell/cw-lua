@@ -25,4 +25,4 @@ Documentation for Iris itself can be found on
 
 ## Copyright
 
-Copyright (c) 2014 Pierre Chapuis
+Copyright (c) Pierre Chapuis

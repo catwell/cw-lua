@@ -77,4 +77,4 @@ and use it as an example.
 
 ## Copyright
 
-- Copyright (c) 2015-2016 Pierre Chapuis
+- Copyright (c) Pierre Chapuis

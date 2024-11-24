@@ -14,4 +14,4 @@ I am unlikely to continue working on this.
 
 ## Copyright
 
-Copyright (c) 2013 Pierre Chapuis
+Copyright (c) Pierre Chapuis

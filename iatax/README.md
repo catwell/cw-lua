@@ -27,5 +27,4 @@ run:
 
 ## Copyright
 
-- Copyright (c) 2016 Pierre Chapuis
-- Original game copyright (c) 2004-2016 Pierre Chapuis
+- Copyright (c) Pierre Chapuis

@@ -7,4 +7,4 @@ This is just code I use to learn more about Git itself.
 
 ## Copyright
 
-- Copyright (c) 2015 Pierre Chapuis
+- Copyright (c) Pierre Chapuis

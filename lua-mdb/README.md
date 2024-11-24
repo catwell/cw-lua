@@ -40,4 +40,4 @@ otherwise it will try to use the platform the code runs on.
 
 ## Copyright
 
-- Copyright (c) 2015-2016 Pierre Chapuis
+- Copyright (c) Pierre Chapuis

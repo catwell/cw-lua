@@ -19,5 +19,5 @@ and it only works with Lua 5.1.
 
 ## Copyright
 
-Copyright (C) 2009-2014 by Pierre Chapuis
+Copyright (C) by Pierre Chapuis
 Released under the WTFPL: http://sam.zoy.org/wtfpl/

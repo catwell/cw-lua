@@ -47,4 +47,4 @@ print(s2:repr()) -- [(0, 1), 1]
 
 ## Copyright
 
-- Copyright (c) 2016-2017 Pierre Chapuis
+- Copyright (c) Pierre Chapuis

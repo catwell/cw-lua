@@ -18,4 +18,4 @@ This means you can do things like this:
 
 ## Copyright
 
-Copyright (c) 2015 Pierre Chapuis
+Copyright (c) Pierre Chapuis

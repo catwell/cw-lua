@@ -55,4 +55,4 @@ It may well work with other libraries though.
 
 ## Copyright
 
-Copyright (c) 2015 Pierre Chapuis
+Copyright (c) Pierre Chapuis

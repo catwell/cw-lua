@@ -42,4 +42,4 @@ while true do c:consume_one(handler) end
 
 ## Copyright
 
-Copyright (c) 2014 Pierre Chapuis
+Copyright (c) Pierre Chapuis
