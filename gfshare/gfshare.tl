@@ -1,5 +1,12 @@
-local function get_tables()
-    logs, exps = {}, {}
+local record Tables
+   logs: {integer}
+   exps: {integer}
+end
+
+local type Shares = {integer: string}
+
+local function get_tables() : Tables
+    local logs, exps = {}, {}
     local x = 1
     for i = 0, 0xff - 1 do
         exps[i] = x
@@ -10,29 +17,27 @@ local function get_tables()
     return {logs=logs, exps=exps}
 end
 
-local function _t(n, f)
+local function _t<T>(n: integer, f: function(): T): {T}
     local t = {}
     for i = 1, n do t[i] = f() end
     return t
 end
 
-local function _zeros(n)
-    return _t(n, function() return 0 end)
+local function _zeros(n: integer): {integer}
+    return _t(n, function(): integer return 0 end)
 end
 
-local function _rands(n)
-    return _t(n, function() return math.random(0, 0xff) end)
+local function _rands(n: integer): {integer}
+    return _t(n, function(): integer return math.random(0, 0xff) end)
 end
 
-local function combine(shares, tables)
-    -- `shares` is a map share_number -> share data (int -> string)
-
+local function combine(shares: Shares, tables?: Tables): string
     local _, first_share = next(shares)
     local sz = #first_share
     local buf = _zeros(sz)
 
     if tables == nil then tables = get_tables() end
-    logs, exps = tables.logs, tables.exps
+    local logs, exps = tables.logs, tables.exps
 
     for i, share in pairs(shares) do
         assert(#share == sz)
@@ -43,9 +48,9 @@ local function combine(shares, tables)
                 bottom = (bottom + logs[i ~ j]) % 0xff
             end
         end
-        log_l_i = (top - bottom) % 0xff
+        local log_l_i = (top - bottom) % 0xff
         for j = 1, sz do
-            b = share:byte(j)
+            local b = share:byte(j)
             if b ~= 0 then
                 buf[j] = buf[j] ~ exps[(log_l_i + logs[b]) % 0xff]
             end
@@ -55,15 +60,20 @@ local function combine(shares, tables)
     return string.char(table.unpack(buf))
 end
 
-local function split(secret, num_shares, threshold, tables)
+local function split(
+    secret: string,
+    num_shares: integer,
+    threshold: integer,
+    tables?: Tables
+): Shares
     local sz = #secret
-    local buf = _t(threshold - 1, function() return _rands(sz) end)
+    local buf = _t(threshold - 1, function(): {integer} return _rands(sz) end)
     buf[threshold] = {secret:byte(1, sz)}
 
     if tables == nil then tables = get_tables() end
-    logs, exps = tables.logs, tables.exps
+    local logs, exps = tables.logs, tables.exps
 
-    local shares = {}
+    local shares: Shares = {}
     for _ = 1, num_shares do
         -- pick next share number
         local n = math.random(1, 0xff)
@@ -72,7 +82,7 @@ local function split(secret, num_shares, threshold, tables)
         local share = _zeros(sz)
         for coef = 1, threshold do
             for i = 1, sz do
-                b = share[i]
+                local b = share[i]
                 if b ~= 0 then
                     b = exps[(logs[n] + logs[b]) % 0xff];
                 end
