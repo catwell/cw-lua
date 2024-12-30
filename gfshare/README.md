@@ -13,5 +13,5 @@ curl https://loadk.com/localua.sh -O
 sh localua.sh .lua
 ./.lua/bin/luarocks install tl
 ./.lua/bin/luarocks install base2base
-./.lua/bin/tl run gfshare.test.lua
+./.lua/bin/tl run gfshare.test.tl
 ```
