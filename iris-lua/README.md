@@ -2,8 +2,8 @@
 
 ## Presentation
 
-A client for the [Iris](http://iris.karalabe.com/) relay protocol
-[v1.0-draft2](http://iris.karalabe.com/specs/relay-protocol-v1.0-draft2.pdf).
+A client for the [Iris](https://github.com/project-iris/iris) relay protocol
+[v1.0-draft2](https://github.com/project-iris/iris/releases/download/v0.3.0/relay-protocol-v1.0-draft2.pdf).
 
 ## Warning
 
